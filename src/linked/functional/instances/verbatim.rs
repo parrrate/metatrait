@@ -1,6 +1,9 @@
+use either::Either;
+
 use crate::linked::{
     functional::{
-        Flatten, Map, Map2, MapExt, MapFn, MapFn2, Pure, Select, SelectFn, Transpose, Wrap,
+        Flatten, Map, Map2, MapExt, MapFn, MapFn2, Pure, Select, SelectFn, Transpose, Union,
+        UnionFn, Wrap,
     },
     Impl, Trait,
 };
@@ -33,6 +36,14 @@ impl Map2 for Verbatim {
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
         f.run(x0, x1)
+    }
+}
+
+impl Union for Verbatim {
+    fn union<F: UnionFn>(
+        x: Either<impl Impl<Self::Wrap<F::Out>>, impl Impl<Self::Wrap<F::Out>>>,
+    ) -> impl Impl<Self::Wrap<F::Out>> {
+        F::union(x)
     }
 }
 
