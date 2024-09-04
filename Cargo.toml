@@ -1,0 +1,15 @@
+[package]
+name = "metatrait"
+version = "0.0.0-alpha.0"
+edition = "2021"
+rust-version = "1.80"
+
+[dependencies]
+either = "1.13.0"
+futures = { version = "0.3.30", optional = true }
+ghost = "0.1.17"
+pin-project = "1.1.5"
+
+[features]
+default = ["futures"]
+futures = ["dep:futures"]
