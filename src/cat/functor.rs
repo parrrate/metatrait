@@ -41,6 +41,10 @@ pub trait Flatten: Wrap {
     ) -> impl Impl<Self::Wrap<Tr>>;
 }
 
+pub trait Iterate: Wrap {
+    fn iterate<F: IterateFn<Self>>(_: F) -> impl Impl<Self::Wrap<F::Out>>;
+}
+
 pub trait ToEither: Wrap {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In>>,

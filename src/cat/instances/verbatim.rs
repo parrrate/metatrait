@@ -54,6 +54,18 @@ impl Flatten for Verbatim {
     }
 }
 
+impl Iterate for Verbatim {
+    fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
+        loop {
+            match f.done() {
+                Either::Left(x) => break x,
+                Either::Right(next) => f = next,
+            }
+            f.run();
+        }
+    }
+}
+
 impl ToEither for Verbatim {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,

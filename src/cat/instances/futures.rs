@@ -81,6 +81,20 @@ impl Flatten for Futures {
     }
 }
 
+impl Iterate for Futures {
+    fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
+        async move {
+            loop {
+                match f.done() {
+                    Either::Left(x) => break x,
+                    Either::Right(next) => f = next,
+                }
+                f.run().to_future().await;
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::traits::{

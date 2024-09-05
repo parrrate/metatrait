@@ -4,9 +4,12 @@ use crate::{
     traits::{
         empty::Empty,
         is::{Is, IsExt},
+        unit::Unit,
     },
     Impl, Trait,
 };
+
+use super::functor::Wrap;
 
 pub trait MapFn<In: ?Sized + Trait> {
     type Out: ?Sized + Trait;
@@ -26,7 +29,7 @@ pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait> {
     fn run(self, _: impl Impl<In0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
 }
 
-pub trait BaseFn {
+pub trait BaseFn: Sized {
     type Out: ?Sized + Trait;
 }
 
@@ -38,4 +41,9 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
     fn run1(self, _: impl Impl<In1>) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr1>>;
     fn run01(_: impl Impl<Self::Tr0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
     fn run10(_: impl Impl<Self::Tr1>, _: impl Impl<In0>) -> impl Impl<Self::Out>;
+}
+
+pub trait IterateFn<Wr: ?Sized + Wrap>: BaseFn {
+    fn done(self) -> Either<impl Impl<Self::Out>, Self>;
+    fn run(&mut self) -> impl Impl<Wr::Wrap<Unit>>;
 }
