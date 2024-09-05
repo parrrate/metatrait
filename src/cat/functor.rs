@@ -4,8 +4,15 @@ use crate::{Impl, Trait};
 
 use super::morphism::*;
 
+pub trait Unwrap<Wr: ?Sized + Wrap>: Trait
+where
+    Wr: Wrap<Wrap<Self::Tr> = Self>,
+{
+    type Tr: ?Sized + Trait;
+}
+
 pub trait Wrap {
-    type Wrap<Tr: ?Sized + Trait>: ?Sized + Trait;
+    type Wrap<Tr: ?Sized + Trait>: ?Sized + Unwrap<Self, Tr = Tr>;
 }
 
 pub trait Pure: Wrap {

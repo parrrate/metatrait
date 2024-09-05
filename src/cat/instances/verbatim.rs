@@ -8,6 +8,10 @@ use crate::{
 
 pub struct Verbatim;
 
+impl<Tr: ?Sized + Trait> Unwrap<Verbatim> for Tr {
+    type Tr = Tr;
+}
+
 impl Wrap for Verbatim {
     type Wrap<Tr: ?Sized + Trait> = Tr;
 }

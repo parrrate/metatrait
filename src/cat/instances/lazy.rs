@@ -11,6 +11,10 @@ use crate::{
 
 pub struct Lazy;
 
+impl<Tr: ?Sized + Trait> Unwrap<Lazy> for To<Tr> {
+    type Tr = Tr;
+}
+
 impl Wrap for Lazy {
     type Wrap<Tr: ?Sized + Trait> = To<Tr>;
 }
