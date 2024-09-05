@@ -128,11 +128,11 @@ impl<
         x: impl Impl<WrI::Wrap<In0>>,
     ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr0>> {
         match WrI::either(x) {
-            Either::Left(x) => match self.0.run0(x) {
+            Either::Left((x, _)) => match self.0.run0(x) {
                 Either::Left(x) => Either::Left(Either::Left(WrI::pure(x))),
                 Either::Right(x) => Either::Right(x),
             },
-            Either::Right(x) => Either::Left(Either::Right(x)),
+            Either::Right((x, _)) => Either::Left(Either::Right(x)),
         }
         .map_left(Trait::union)
     }
@@ -142,11 +142,11 @@ impl<
         x: impl Impl<WrI::Wrap<In1>>,
     ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr1>> {
         match WrI::either(x) {
-            Either::Left(x) => match self.0.run1(x) {
+            Either::Left((x, _)) => match self.0.run1(x) {
                 Either::Left(x) => Either::Left(Either::Left(WrI::pure(x))),
                 Either::Right(x) => Either::Right(x),
             },
-            Either::Right(x) => Either::Left(Either::Right(x)),
+            Either::Right((x, _)) => Either::Left(Either::Right(x)),
         }
         .map_left(Trait::union)
     }
@@ -185,17 +185,23 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
 }
 
 impl<WrO: ToEither + Pure, WrI: ToEither> ToEither for Composition<WrO, WrI> {
+    type L = (WrO::L, WrI::L);
+    type R = Either<WrO::R, WrI::R>;
+
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
-    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
+    ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)> {
         match WrO::either::<WrI::Wrap<In>, WrI::Wrap<Out>>(x) {
-            Either::Left(x) => match WrI::either::<In, Out>(x) {
-                Either::Left(x) => Either::Left(x),
-                Either::Right(x) => Either::Right(Either::Left(WrO::pure::<WrI::Wrap<Out>>(x))),
+            Either::Left((x, eo)) => match WrI::either::<In, Out>(x) {
+                Either::Left((x, ei)) => Either::Left((x, (eo, ei))),
+                Either::Right((x, ei)) => Either::Right((
+                    Either::Left(WrO::pure::<WrI::Wrap<Out>>(x)),
+                    Either::Right(ei),
+                )),
             },
-            Either::Right(x) => Either::Right(Either::Right(x)),
+            Either::Right((x, eo)) => Either::Right((Either::Right(x), Either::Left(eo))),
         }
-        .map_right(Trait::union)
+        .map_right(|(x, e)| (Trait::union(x), e))
     }
 }
 

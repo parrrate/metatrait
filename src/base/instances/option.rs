@@ -38,7 +38,7 @@ impl BaseSelect for Options {
     fn select<In0, In1>(
         x0: Self::Wrap<In0>,
         x1: Self::Wrap<In1>,
-    ) -> BaseEitherWrap<Self, In0, In1> {
+    ) -> BaseSelectWrap<Self, In0, In1> {
         match (x0, x1) {
             (None, None) => None,
             (None, Some(x1)) => Some(Either::Right((x1, None))),
@@ -54,10 +54,13 @@ impl BaseFlatten for Options {
 }
 
 impl BaseToEither for Options {
-    fn either<In, Out>(x: Self::Wrap<In>) -> Either<In, Self::Wrap<Out>> {
+    type L = ();
+    type R = ();
+
+    fn either<In, Out>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
         match x {
-            Some(x) => Either::Left(x),
-            None => Either::Right(None),
+            Some(x) => Either::Left((x, ())),
+            None => Either::Right((None, ())),
         }
     }
 }

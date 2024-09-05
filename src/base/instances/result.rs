@@ -42,7 +42,7 @@ impl<E> BaseSelect for Results<E> {
     fn select<In0, In1>(
         x0: Self::Wrap<In0>,
         x1: Self::Wrap<In1>,
-    ) -> BaseEitherWrap<Self, In0, In1> {
+    ) -> BaseSelectWrap<Self, In0, In1> {
         match (x0, x1) {
             (Err(e), Err(_)) => Err(e),
             (Err(e), Ok(x1)) => Ok(Either::Right((x1, Err(e)))),
@@ -58,10 +58,13 @@ impl<E> BaseFlatten for Results<E> {
 }
 
 impl<E> BaseToEither for Results<E> {
-    fn either<In, Out>(x: Self::Wrap<In>) -> Either<In, Self::Wrap<Out>> {
+    type L = ();
+    type R = ();
+
+    fn either<In, Out>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
         match x {
-            Ok(x) => Either::Left(x),
-            Err(e) => Either::Right(Err(e)),
+            Ok(x) => Either::Left((x, ())),
+            Err(e) => Either::Right((Err(e), ())),
         }
     }
 }
