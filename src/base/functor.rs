@@ -60,3 +60,34 @@ impl<Wr: ?Sized + BaseFunctor + BaseMap2 + BasePure> BaseApplicative for Wr {}
 pub trait BaseMonad: BaseApplicative + BaseFlatten {}
 
 impl<Wr: ?Sized + BaseApplicative + BaseFlatten> BaseMonad for Wr {}
+
+pub trait BaseWrappedMapExt<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>>: BaseUnwrap<Wr> {
+    fn b_map<Out>(self, f: impl FnOnce(Self::T) -> Out) -> Wr::Wrap<Out> {
+        Wr::map(self, f)
+    }
+}
+
+impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, Wrapped: BaseUnwrap<Wr>> BaseWrappedMapExt<Wr>
+    for Wrapped
+{
+}
+
+pub trait BaseWrappedFlattenExt<
+    Wr: ?Sized + BaseFlatten<Wrap<T> = Self> + BaseFlatten<Wrap<U> = T>,
+    T: BaseUnwrap<Wr, T = U>,
+    U,
+>: BaseUnwrap<Wr, T = T>
+{
+    fn b_flatten(self) -> T {
+        Wr::flatten::<U>(self)
+    }
+}
+
+impl<
+        Wr: ?Sized + BaseFlatten<Wrap<T> = Self> + BaseFlatten<Wrap<U> = T>,
+        T: BaseUnwrap<Wr, T = U>,
+        U,
+        Wrapped: BaseUnwrap<Wr, T = T>,
+    > BaseWrappedFlattenExt<Wr, T, U> for Wrapped
+{
+}

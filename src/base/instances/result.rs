@@ -71,7 +71,7 @@ impl<E> BaseTranspose for Results<E> {
         x: Self::Wrap<Wr::Wrap<T>>,
     ) -> Wr::Wrap<Self::Wrap<T>> {
         match x {
-            Ok(x) => Wr::map(x, Ok),
+            Ok(x) => x.b_map(Ok),
             Err(e) => Wr::pure(Err(e)),
         }
     }
