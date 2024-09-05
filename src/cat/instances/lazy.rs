@@ -1,5 +1,5 @@
 use crate::{
-    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Wrap},
+    cat::{functor::*, morphism::*},
     traits::to::{To, ToExt},
     Impl, Trait,
 };

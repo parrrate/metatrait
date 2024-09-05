@@ -1,6 +1,6 @@
 use either::Either;
 
-pub mod functional;
+pub mod cat;
 pub mod traits;
 
 pub trait Trait {

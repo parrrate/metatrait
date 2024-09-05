@@ -3,9 +3,10 @@ use std::marker::PhantomData;
 use either::Either;
 
 use crate::{
-    functional::{
-        BaseFn, Flatten, FlattenFn, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, SelectMap01,
-        SelectMap10, ToEither, Transpose, TransposeFn, Wrap,
+    cat::{
+        functor::*,
+        morphism::*,
+        util::{FlattenFn, SelectMap01, SelectMap10, TransposeFn},
     },
     Impl, Trait,
 };
@@ -199,7 +200,7 @@ impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
 #[cfg(test)]
 mod test {
     use crate::{
-        functional::instances::{futures::Futures, lazy::Lazy},
+        cat::instances::{futures::Futures, lazy::Lazy},
         traits::{
             empty::Empty,
             future::ToFutureExt,

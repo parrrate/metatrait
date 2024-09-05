@@ -2,7 +2,7 @@ use either::Either;
 use futures::future::select;
 
 use crate::{
-    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Wrap},
+    cat::{functor::*, morphism::*},
     traits::future::{ToFuture, ToFutureExt},
     Impl, Trait,
 };
