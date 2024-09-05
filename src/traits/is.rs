@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::linked::{Impl, Trait};
+use crate::{Impl, Trait};
 
 pub struct Is<That, Tr: ?Sized>(That, Tr);
 

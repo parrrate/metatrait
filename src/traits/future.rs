@@ -9,7 +9,7 @@ use either::Either;
 use futures::future::Pending;
 use pin_project::pin_project;
 
-use crate::linked::{Impl, Trait};
+use crate::{Impl, Trait};
 
 pub struct ToFuture<Tr: ?Sized>(Tr);
 

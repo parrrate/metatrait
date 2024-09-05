@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::linked::{
+use crate::{
     functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Transpose, Wrap},
     Impl, Sample, Trait,
 };
@@ -70,7 +70,7 @@ impl Transpose for Verbatim {
 
 #[cfg(test)]
 mod test {
-    use crate::linked::traits::{
+    use crate::traits::{
         empty::Empty,
         is::{Is, IsExt},
     };
