@@ -99,16 +99,13 @@ impl Iterate for Futures {
 
 #[cfg(test)]
 mod test {
-    use crate::traits::{
-        empty::Empty,
-        is::{Is, IsExt},
-    };
+    use crate::traits::is::{Is, IsExt};
 
     use super::*;
 
     #[test]
     fn test() {
-        let x = Futures::pure::<Is<_, Empty>>(0);
+        let x = Futures::pure::<Is<_>>(0);
         let x = Futures::map(x, |x| x + 1);
         let x = Futures::map(x, |x| x + 1);
         let x = Futures::map(x, |x| x + 1);

@@ -202,7 +202,6 @@ mod test {
     use crate::{
         cat::instances::{futures::Futures, lazy::Lazy},
         traits::{
-            empty::Empty,
             future::ToFutureExt,
             is::{Is, IsExt},
             to::ToExt,
@@ -214,7 +213,7 @@ mod test {
     #[test]
     fn test() {
         type Wr = Composition<Futures, Lazy>;
-        let x = Wr::pure::<Is<_, Empty>>(0);
+        let x = Wr::pure::<Is<_>>(0);
         let x = Wr::map(x, |x| x + 1);
         let x = Wr::map(x, |x| x + 1);
         let x = Wr::map(x, |x| x + 1);

@@ -1,10 +1,7 @@
 use either::Either;
 
 use crate::{
-    traits::{
-        empty::Empty,
-        is::{Is, IsExt},
-    },
+    traits::is::{Is, IsExt},
     Impl, Trait,
 };
 
@@ -15,10 +12,10 @@ pub trait MapFn<In: ?Sized + Trait> {
     fn run(self, _: impl Impl<In>) -> impl Impl<Self::Out>;
 }
 
-impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In, Empty>> for F {
-    type Out = Is<Out, Empty>;
+impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In>> for F {
+    type Out = Is<Out>;
 
-    fn run(self, x: impl Impl<Is<In, Empty>>) -> impl Impl<Self::Out> {
+    fn run(self, x: impl Impl<Is<In>>) -> impl Impl<Self::Out> {
         self(x.into_that())
     }
 }
@@ -43,5 +40,5 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
 }
 
 pub trait IterateFn<Wr: ?Sized + Wrap>: BaseFn {
-    fn done(self) -> Either<impl Impl<Self::Out>, impl Impl<Wr::Wrap<Is<Self, Empty>>>>;
+    fn done(self) -> Either<impl Impl<Self::Out>, impl Impl<Wr::Wrap<Is<Self>>>>;
 }

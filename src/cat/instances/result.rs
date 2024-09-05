@@ -8,7 +8,6 @@ mod test {
         cat::functor::*,
         traits::{
             base::BaseExt,
-            empty::Empty,
             is::{Is, IsExt},
         },
     };
@@ -17,7 +16,7 @@ mod test {
 
     #[test]
     fn test() {
-        let x = Results::<()>::pure::<Is<_, Empty>>(0);
+        let x = Results::<()>::pure::<Is<_>>(0);
         let x = Results::<()>::map(x, |x| x + 1);
         let x = Results::<()>::map(x, |x| x + 1);
         let x = Results::<()>::map(x, |x| x + 1);
