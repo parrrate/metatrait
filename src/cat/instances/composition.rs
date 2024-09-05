@@ -178,7 +178,9 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
     fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
-        WrO::flatten(x.w_map(TransposeFn::<WrO, WrI, WrI::Wrap<Tr>>)).w_map(FlattenFn::<WrI, Tr>)
+        x.w_map(TransposeFn::<WrO, WrI, WrI::Wrap<Tr>>)
+            .w_flatten()
+            .w_map(FlattenFn::<WrI, Tr>)
     }
 }
 

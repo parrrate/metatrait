@@ -70,21 +70,21 @@ pub trait BaseWrappedMapExt<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>>: BaseUnw
 impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, To: BaseUnwrap<Wr>> BaseWrappedMapExt<Wr> for To {}
 
 pub trait BaseWrappedFlattenExt<
-    Wr: ?Sized + BaseFlatten<Wrap<T> = Self> + BaseFlatten<Wrap<U> = T>,
-    T: BaseUnwrap<Wr, T = U>,
-    U,
->: BaseUnwrap<Wr, T = T>
+    Wr: ?Sized + BaseFlatten<Wrap<Ti> = Self> + BaseFlatten<Wrap<T> = Ti>,
+    Ti: BaseUnwrap<Wr, T = T>,
+    T,
+>: BaseUnwrap<Wr, T = Ti>
 {
-    fn b_flatten(self) -> T {
-        Wr::flatten::<U>(self)
+    fn b_flatten(self) -> Ti {
+        Wr::flatten::<T>(self)
     }
 }
 
 impl<
-        Wr: ?Sized + BaseFlatten<Wrap<T> = Self> + BaseFlatten<Wrap<U> = T>,
-        T: BaseUnwrap<Wr, T = U>,
-        U,
-        To: BaseUnwrap<Wr, T = T>,
-    > BaseWrappedFlattenExt<Wr, T, U> for To
+        Wr: ?Sized + BaseFlatten<Wrap<Ti> = Self> + BaseFlatten<Wrap<T> = Ti>,
+        Ti: BaseUnwrap<Wr, T = T>,
+        T,
+        To: BaseUnwrap<Wr, T = Ti>,
+    > BaseWrappedFlattenExt<Wr, Ti, T> for To
 {
 }
