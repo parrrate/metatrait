@@ -2,6 +2,7 @@ use either::Either;
 
 use crate::{
     cat::{functor::*, morphism::*},
+    traits::is::IsExt,
     Impl, Sample, Trait,
 };
 
@@ -59,9 +60,8 @@ impl Iterate for Verbatim {
         loop {
             match f.done() {
                 Either::Left(x) => break x,
-                Either::Right(next) => f = next,
+                Either::Right(next) => f = next.into_that(),
             }
-            f.run();
         }
     }
 }
