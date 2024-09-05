@@ -67,3 +67,25 @@ impl Transpose for Verbatim {
         x
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::linked::traits::{
+        empty::Empty,
+        is::{Is, IsExt},
+    };
+
+    use super::*;
+
+    #[test]
+    fn test() {
+        let x = Verbatim::pure::<Is<_, Empty>>(0);
+        let x = Verbatim::map(x, |x| x + 1);
+        let x = Verbatim::map(x, |x| x + 1);
+        let x = Verbatim::map(x, |x| x + 1);
+        let x = Verbatim::map(x, |x| x + 1);
+        let x = Verbatim::map(x, |x| x + 1);
+        let x = x.into_that();
+        assert_eq!(x, 5);
+    }
+}

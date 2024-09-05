@@ -184,3 +184,34 @@ impl<Uo: Transpose + Map + Pure, Ui: Transpose> Transpose for Composition<Uo, Ui
         Uo::transpose::<Wr, _>(Uo::map(x, TransposeFn::<Wr, Ui, Tr>))
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::linked::{
+        functional::instances::{futures::Futures, lazy::Lazy},
+        traits::{
+            empty::Empty,
+            future::ToFutureExt,
+            is::{Is, IsExt},
+            to::ToExt,
+        },
+    };
+
+    use super::*;
+
+    #[test]
+    fn test() {
+        type U = Composition<Futures, Lazy>;
+        let x = U::pure::<Is<_, Empty>>(0);
+        let x = U::map(x, |x| x + 1);
+        let x = U::map(x, |x| x + 1);
+        let x = U::map(x, |x| x + 1);
+        let x = U::map(x, |x| x + 1);
+        let x = U::map(x, |x| x + 1);
+        let x = x.to_future();
+        let x = futures::executor::block_on(x);
+        let x = x.to();
+        let x = x.into_that();
+        assert_eq!(x, 5);
+    }
+}
