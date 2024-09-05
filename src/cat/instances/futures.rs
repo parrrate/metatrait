@@ -12,7 +12,7 @@ use crate::{
 
 pub struct Futures;
 
-impl<Tr: ?Sized + Trait> Unwrap<Futures> for ToFuture<Tr> {
+impl<Tr: ?Sized + Trait> Unwrap<ToFuture<Tr>> for Futures {
     type Tr = Tr;
 }
 

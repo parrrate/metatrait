@@ -11,7 +11,7 @@ use crate::{
 
 pub struct Lazy;
 
-impl<Tr: ?Sized + Trait> Unwrap<Lazy> for To<Tr> {
+impl<Tr: ?Sized + Trait> Unwrap<To<Tr>> for Lazy {
     type Tr = Tr;
 }
 
