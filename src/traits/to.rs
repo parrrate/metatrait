@@ -11,7 +11,7 @@ impl<Tr: ?Sized + Trait> Trait for To<Tr> {
     type Sample = fn() -> Tr::Sample;
 
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
-        || Tr::union(x.map_left(ToExt::to).map_right(ToExt::to))
+        || Trait::union(x.map_left(ToExt::to).map_right(ToExt::to))
     }
 }
 

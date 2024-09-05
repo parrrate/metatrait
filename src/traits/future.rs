@@ -22,7 +22,7 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
 
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
         async {
-            Tr::union(match x {
+            Trait::union(match x {
                 Either::Left(x) => Either::Left(x.to_future().await),
                 Either::Right(x) => Either::Right(x.to_future().await),
             })

@@ -5,7 +5,7 @@ use either::Either;
 use crate::{
     functional::{
         BaseFn, Flatten, FlattenFn, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, SelectMap01,
-        SelectMap10, Transpose, TransposeFn, Wrap,
+        SelectMap10, ToEither, Transpose, TransposeFn, Wrap,
     },
     Impl, Trait,
 };
@@ -88,27 +88,25 @@ impl<WrO: Map2, WrI: Map2> Map2 for Composition<WrO, WrI> {
     }
 }
 
-struct CompositionSelect<F, WrO, WrI, In0: ?Sized, In1: ?Sized>(
+struct CompositionSelect<F, WrI, In0: ?Sized, In1: ?Sized>(
     F,
-    PhantomData<WrO>,
     PhantomData<WrI>,
     PhantomData<In0>,
     PhantomData<In1>,
 );
 
-impl<F: SelectFn<In0, In1>, WrO: Wrap, WrI: Map, In0: ?Sized + Trait, In1: ?Sized + Trait> BaseFn
-    for CompositionSelect<F, WrO, WrI, In0, In1>
+impl<F: SelectFn<In0, In1>, WrI: Map, In0: ?Sized + Trait, In1: ?Sized + Trait> BaseFn
+    for CompositionSelect<F, WrI, In0, In1>
 {
     type Out = WrI::Wrap<F::Out>;
 }
 
 impl<
         F: SelectFn<In0, In1>,
-        WrO: Wrap,
-        WrI: Map + Transpose + Pure,
+        WrI: Map + ToEither + Pure,
         In0: ?Sized + Trait,
         In1: ?Sized + Trait,
-    > SelectFn<WrI::Wrap<In0>, WrI::Wrap<In1>> for CompositionSelect<F, WrO, WrI, In0, In1>
+    > SelectFn<WrI::Wrap<In0>, WrI::Wrap<In1>> for CompositionSelect<F, WrI, In0, In1>
 {
     type Tr0 = F::Tr0;
     type Tr1 = F::Tr1;
@@ -150,7 +148,7 @@ impl<
     }
 }
 
-impl<WrO: Select, WrI: Map + Transpose + Pure> Select for Composition<WrO, WrI> {
+impl<WrO: Select, WrI: Map + ToEither + Pure> Select for Composition<WrO, WrI> {
     fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
@@ -159,13 +157,7 @@ impl<WrO: Select, WrI: Map + Transpose + Pure> Select for Composition<WrO, WrI> 
         WrO::select(
             x0,
             x1,
-            CompositionSelect::<F, WrO, WrI, In0, In1>(
-                f,
-                PhantomData,
-                PhantomData,
-                PhantomData,
-                PhantomData,
-            ),
+            CompositionSelect::<F, WrI, In0, In1>(f, PhantomData, PhantomData, PhantomData),
         )
     }
 }
@@ -181,7 +173,7 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
     }
 }
 
-impl<WrO: Transpose + Map + Pure, WrI: Transpose> Transpose for Composition<WrO, WrI> {
+impl<WrO: ToEither + Pure, WrI: ToEither> ToEither for Composition<WrO, WrI> {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
     ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
@@ -194,7 +186,9 @@ impl<WrO: Transpose + Map + Pure, WrI: Transpose> Transpose for Composition<WrO,
         }
         .map_right(Trait::union)
     }
+}
 
+impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
