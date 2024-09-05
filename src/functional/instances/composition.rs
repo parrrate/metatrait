@@ -10,168 +10,185 @@ use crate::{
     Impl, Trait,
 };
 
-pub struct Composition<Uo, Ui>(Uo, Ui);
+pub struct Composition<WrO, WrI>(WrO, WrI);
 
-impl<Uo: Wrap, Ui: Wrap> Wrap for Composition<Uo, Ui> {
-    type Wrap<Tr: ?Sized + Trait> = Uo::Wrap<Ui::Wrap<Tr>>;
+impl<WrO: Wrap, WrI: Wrap> Wrap for Composition<WrO, WrI> {
+    type Wrap<Tr: ?Sized + Trait> = WrO::Wrap<WrI::Wrap<Tr>>;
 }
 
-impl<Uo: Pure, Ui: Pure> Pure for Composition<Uo, Ui> {
+impl<WrO: Pure, WrI: Pure> Pure for Composition<WrO, WrI> {
     fn pure<Tr: ?Sized + Trait>(x: impl Impl<Tr>) -> impl Impl<Self::Wrap<Tr>> {
-        Uo::pure(Ui::pure(x))
+        WrO::pure(WrI::pure(x))
     }
 }
 
-impl<Uo: Map, Ui: Map> Map for Composition<Uo, Ui> {
+struct CompositionMap<F, Wr: ?Sized, In: ?Sized>(F, PhantomData<Wr>, PhantomData<In>);
+
+impl<F: MapFn<In>, Wr: ?Sized + Map, In: ?Sized + Trait> CompositionMap<F, Wr, In> {
+    fn new(f: F) -> Self {
+        Self(f, PhantomData, PhantomData)
+    }
+}
+
+impl<F: MapFn<In>, Wr: ?Sized + Map, In: ?Sized + Trait> MapFn<Wr::Wrap<In>>
+    for CompositionMap<F, Wr, In>
+{
+    type Out = Wr::Wrap<F::Out>;
+
+    fn run(self, x: impl Impl<Wr::Wrap<In>>) -> impl Impl<Self::Out> {
+        Wr::map(x, self.0)
+    }
+}
+
+impl<WrO: Map, WrI: Map> Map for Composition<WrO, WrI> {
     fn map<In: ?Sized + Trait, F: MapFn<In>>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        struct Tmp<F, Ui, In: ?Sized>(F, PhantomData<Ui>, PhantomData<In>);
-        impl<In: ?Sized + Trait, F: MapFn<In>, Ui: Map> MapFn<Ui::Wrap<In>> for Tmp<F, Ui, In> {
-            type Out = Ui::Wrap<F::Out>;
-
-            fn run(self, x: impl Impl<Ui::Wrap<In>>) -> impl Impl<Self::Out> {
-                Ui::map(x, self.0)
-            }
-        }
-
-        Uo::map(x, Tmp::<F, Ui, In>(f, PhantomData, PhantomData))
+        WrO::map(x, CompositionMap::<F, WrI, In>::new(f))
     }
 }
 
-impl<Uo: Map2, Ui: Map2> Map2 for Composition<Uo, Ui> {
+struct CompositionMap2<F, Wr: ?Sized, In0: ?Sized, In1: ?Sized>(
+    F,
+    PhantomData<Wr>,
+    PhantomData<In0>,
+    PhantomData<In1>,
+);
+
+impl<F: MapFn2<In0, In1>, Wr: ?Sized + Map2, In0: ?Sized + Trait, In1: ?Sized + Trait>
+    CompositionMap2<F, Wr, In0, In1>
+{
+    fn new(f: F) -> Self {
+        Self(f, PhantomData, PhantomData, PhantomData)
+    }
+}
+
+impl<F: MapFn2<In0, In1>, Wr: ?Sized + Map2, In0: ?Sized + Trait, In1: ?Sized + Trait>
+    MapFn2<Wr::Wrap<In0>, Wr::Wrap<In1>> for CompositionMap2<F, Wr, In0, In1>
+{
+    type Out = Wr::Wrap<F::Out>;
+
+    fn run(
+        self,
+        x0: impl Impl<Wr::Wrap<In0>>,
+        x1: impl Impl<Wr::Wrap<In1>>,
+    ) -> impl Impl<Self::Out> {
+        Wr::map2(x0, x1, self.0)
+    }
+}
+
+impl<WrO: Map2, WrI: Map2> Map2 for Composition<WrO, WrI> {
     fn map2<In0: ?Sized + Trait, In1: ?Sized + Trait, F: MapFn2<In0, In1>>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        struct Tmp<F, Ui, In0: ?Sized, In1: ?Sized>(
-            F,
-            PhantomData<Ui>,
-            PhantomData<In0>,
-            PhantomData<In1>,
-        );
-        impl<In0: ?Sized + Trait, In1: ?Sized + Trait, F: MapFn2<In0, In1>, Ui: Map2>
-            MapFn2<Ui::Wrap<In0>, Ui::Wrap<In1>> for Tmp<F, Ui, In0, In1>
-        {
-            type Out = Ui::Wrap<F::Out>;
-
-            fn run(
-                self,
-                x0: impl Impl<Ui::Wrap<In0>>,
-                x1: impl Impl<Ui::Wrap<In1>>,
-            ) -> impl Impl<Self::Out> {
-                Ui::map2(x0, x1, self.0)
-            }
-        }
-
-        Uo::map2(
-            x0,
-            x1,
-            Tmp::<F, Ui, In0, In1>(f, PhantomData, PhantomData, PhantomData),
-        )
+        WrO::map2(x0, x1, CompositionMap2::<F, WrI, In0, In1>::new(f))
     }
 }
 
-impl<Uo: Select, Ui: Map + Transpose + Pure> Select for Composition<Uo, Ui> {
+struct CompositionSelect<F, WrO, WrI, In0: ?Sized, In1: ?Sized>(
+    F,
+    PhantomData<WrO>,
+    PhantomData<WrI>,
+    PhantomData<In0>,
+    PhantomData<In1>,
+);
+
+impl<F: SelectFn<In0, In1>, WrO: Wrap, WrI: Map, In0: ?Sized + Trait, In1: ?Sized + Trait> BaseFn
+    for CompositionSelect<F, WrO, WrI, In0, In1>
+{
+    type Out = WrI::Wrap<F::Out>;
+}
+
+impl<
+        F: SelectFn<In0, In1>,
+        WrO: Wrap,
+        WrI: Map + Transpose + Pure,
+        In0: ?Sized + Trait,
+        In1: ?Sized + Trait,
+    > SelectFn<WrI::Wrap<In0>, WrI::Wrap<In1>> for CompositionSelect<F, WrO, WrI, In0, In1>
+{
+    type Tr0 = F::Tr0;
+    type Tr1 = F::Tr1;
+
+    fn run0(
+        self,
+        x: impl Impl<WrI::Wrap<In0>>,
+    ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr0>> {
+        match WrI::either(x) {
+            Either::Left(x) => match self.0.run0(x) {
+                Either::Left(x) => Either::Left(Either::Left(WrI::pure(x))),
+                Either::Right(x) => Either::Right(x),
+            },
+            Either::Right(x) => Either::Left(Either::Right(x)),
+        }
+        .map_left(Trait::union)
+    }
+
+    fn run1(
+        self,
+        x: impl Impl<WrI::Wrap<In1>>,
+    ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr1>> {
+        match WrI::either(x) {
+            Either::Left(x) => match self.0.run1(x) {
+                Either::Left(x) => Either::Left(Either::Left(WrI::pure(x))),
+                Either::Right(x) => Either::Right(x),
+            },
+            Either::Right(x) => Either::Left(Either::Right(x)),
+        }
+        .map_left(Trait::union)
+    }
+
+    fn run01(x: impl Impl<Self::Tr0>, y: impl Impl<WrI::Wrap<In1>>) -> impl Impl<Self::Out> {
+        WrI::map(y, SelectMap01::<_, F, In0>::new(x))
+    }
+
+    fn run10(x: impl Impl<Self::Tr1>, y: impl Impl<WrI::Wrap<In0>>) -> impl Impl<Self::Out> {
+        WrI::map(y, SelectMap10::<_, F, In1>::new(x))
+    }
+}
+
+impl<WrO: Select, WrI: Map + Transpose + Pure> Select for Composition<WrO, WrI> {
     fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        struct Tmp<F, Uo, Ui, In0: ?Sized, In1: ?Sized>(
-            F,
-            PhantomData<Uo>,
-            PhantomData<Ui>,
-            PhantomData<In0>,
-            PhantomData<In1>,
-        );
-        impl<
-                In0: ?Sized + Trait,
-                In1: ?Sized + Trait,
-                F: SelectFn<In0, In1>,
-                Uo: Wrap,
-                Ui: Map,
-            > BaseFn for Tmp<F, Uo, Ui, In0, In1>
-        {
-            type Out = Ui::Wrap<F::Out>;
-        }
-        impl<
-                In0: ?Sized + Trait,
-                In1: ?Sized + Trait,
-                F: SelectFn<In0, In1>,
-                Uo: Wrap,
-                Ui: Map + Transpose + Pure,
-            > SelectFn<Ui::Wrap<In0>, Ui::Wrap<In1>> for Tmp<F, Uo, Ui, In0, In1>
-        {
-            type Tr0 = F::Tr0;
-            type Tr1 = F::Tr1;
-
-            fn run0(
-                self,
-                x: impl Impl<Ui::Wrap<In0>>,
-            ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr0>> {
-                match Ui::either(x) {
-                    Either::Left(x) => match self.0.run0(x) {
-                        Either::Left(x) => Either::Left(Either::Left(Ui::pure(x))),
-                        Either::Right(x) => Either::Right(x),
-                    },
-                    Either::Right(x) => Either::Left(Either::Right(x)),
-                }
-                .map_left(Trait::union)
-            }
-
-            fn run1(
-                self,
-                x: impl Impl<Ui::Wrap<In1>>,
-            ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr1>> {
-                match Ui::either(x) {
-                    Either::Left(x) => match self.0.run1(x) {
-                        Either::Left(x) => Either::Left(Either::Left(Ui::pure(x))),
-                        Either::Right(x) => Either::Right(x),
-                    },
-                    Either::Right(x) => Either::Left(Either::Right(x)),
-                }
-                .map_left(Trait::union)
-            }
-
-            fn run01(x: impl Impl<Self::Tr0>, y: impl Impl<Ui::Wrap<In1>>) -> impl Impl<Self::Out> {
-                Ui::map(y, SelectMap01::<_, F, In0>::new(x))
-            }
-
-            fn run10(x: impl Impl<Self::Tr1>, y: impl Impl<Ui::Wrap<In0>>) -> impl Impl<Self::Out> {
-                Ui::map(y, SelectMap10::<_, F, In1>::new(x))
-            }
-        }
-
-        Uo::select(
+        WrO::select(
             x0,
             x1,
-            Tmp::<F, Uo, Ui, In0, In1>(f, PhantomData, PhantomData, PhantomData, PhantomData),
+            CompositionSelect::<F, WrO, WrI, In0, In1>(
+                f,
+                PhantomData,
+                PhantomData,
+                PhantomData,
+                PhantomData,
+            ),
         )
     }
 }
 
-impl<Uo: Flatten + Map + Pure, Ui: Flatten + Transpose> Flatten for Composition<Uo, Ui> {
+impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Composition<WrO, WrI> {
     fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
-        Uo::map(
-            Uo::flatten(Uo::map(x, TransposeFn::<Uo, Ui, Ui::Wrap<Tr>>)),
-            FlattenFn::<Ui, Tr>,
+        WrO::map(
+            WrO::flatten(WrO::map(x, TransposeFn::<WrO, WrI, WrI::Wrap<Tr>>)),
+            FlattenFn::<WrI, Tr>,
         )
     }
 }
 
-impl<Uo: Transpose + Map + Pure, Ui: Transpose> Transpose for Composition<Uo, Ui> {
+impl<WrO: Transpose + Map + Pure, WrI: Transpose> Transpose for Composition<WrO, WrI> {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
     ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
-        match Uo::either::<Ui::Wrap<In>, Ui::Wrap<Out>>(x) {
-            Either::Left(x) => match Ui::either::<In, Out>(x) {
+        match WrO::either::<WrI::Wrap<In>, WrI::Wrap<Out>>(x) {
+            Either::Left(x) => match WrI::either::<In, Out>(x) {
                 Either::Left(x) => Either::Left(x),
-                Either::Right(x) => Either::Right(Either::Left(Uo::pure::<Ui::Wrap<Out>>(x))),
+                Either::Right(x) => Either::Right(Either::Left(WrO::pure::<WrI::Wrap<Out>>(x))),
             },
             Either::Right(x) => Either::Right(Either::Right(x)),
         }
@@ -181,7 +198,7 @@ impl<Uo: Transpose + Map + Pure, Ui: Transpose> Transpose for Composition<Uo, Ui
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
-        Uo::transpose::<Wr, _>(Uo::map(x, TransposeFn::<Wr, Ui, Tr>))
+        WrO::transpose::<Wr, _>(WrO::map(x, TransposeFn::<Wr, WrI, Tr>))
     }
 }
 
@@ -201,13 +218,13 @@ mod test {
 
     #[test]
     fn test() {
-        type U = Composition<Futures, Lazy>;
-        let x = U::pure::<Is<_, Empty>>(0);
-        let x = U::map(x, |x| x + 1);
-        let x = U::map(x, |x| x + 1);
-        let x = U::map(x, |x| x + 1);
-        let x = U::map(x, |x| x + 1);
-        let x = U::map(x, |x| x + 1);
+        type Wr = Composition<Futures, Lazy>;
+        let x = Wr::pure::<Is<_, Empty>>(0);
+        let x = Wr::map(x, |x| x + 1);
+        let x = Wr::map(x, |x| x + 1);
+        let x = Wr::map(x, |x| x + 1);
+        let x = Wr::map(x, |x| x + 1);
+        let x = Wr::map(x, |x| x + 1);
         let x = x.to_future();
         let x = futures::executor::block_on(x);
         let x = x.to();
