@@ -5,6 +5,8 @@ use std::{
     task::{Context, Poll},
 };
 
+use either::Either;
+use futures::future::Pending;
 use pin_project::pin_project;
 
 use crate::linked::{Impl, Trait};
@@ -16,6 +18,16 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> =
         (Pin<&'tmp mut Imp>, &'tmp mut Context<'out>);
     type Out<'out, Imp: Impl<Self>> = Poll<Imp::Associated>;
+    type Sample = Pending<Tr::Sample>;
+
+    fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
+        async {
+            Tr::union(match x {
+                Either::Left(x) => Either::Left(x.to_future().await),
+                Either::Right(x) => Either::Right(x.to_future().await),
+            })
+        }
+    }
 }
 
 impl<F: Future<Output = Out>, Out: Impl<Tr>, Tr: ?Sized + Trait> Impl<ToFuture<Tr>> for F {

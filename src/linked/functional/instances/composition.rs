@@ -4,8 +4,8 @@ use either::Either;
 
 use crate::linked::{
     functional::{
-        Flatten, FlattenFn, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, SelectMap, Transpose,
-        TransposeFn, Union, UnionFn, Wrap,
+        BaseFn, Flatten, FlattenFn, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, SelectMap01,
+        SelectMap10, Transpose, TransposeFn, Wrap,
     },
     Impl, Trait,
 };
@@ -74,27 +74,8 @@ impl<Uo: Map2, Ui: Map2> Map2 for Composition<Uo, Ui> {
     }
 }
 
-impl<Uo: Union, Ui: Union> Union for Composition<Uo, Ui> {
-    fn union<F: UnionFn>(
-        x: Either<impl Impl<Self::Wrap<F::Out>>, impl Impl<Self::Wrap<F::Out>>>,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        struct Tmp<F, Ui>(F, Ui);
-        impl<F: UnionFn, Ui: Union> UnionFn for Tmp<F, Ui> {
-            type Out = Ui::Wrap<F::Out>;
-
-            fn union(
-                x: Either<impl Impl<Self::Out>, impl Impl<Self::Out>>,
-            ) -> impl Impl<Self::Out> {
-                Ui::union::<F>(x)
-            }
-        }
-
-        Uo::union::<Tmp<F, Ui>>(x)
-    }
-}
-
-impl<Uo: Select, Ui: Map + Union> Select for Composition<Uo, Ui> {
-    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<Self, In0, In1>>(
+impl<Uo: Select, Ui: Map + Transpose + Pure> Select for Composition<Uo, Ui> {
+    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
@@ -109,41 +90,58 @@ impl<Uo: Select, Ui: Map + Union> Select for Composition<Uo, Ui> {
         impl<
                 In0: ?Sized + Trait,
                 In1: ?Sized + Trait,
-                F: SelectFn<Composition<Uo, Ui>, In0, In1>,
+                F: SelectFn<In0, In1>,
                 Uo: Wrap,
-                Ui: Map + Union,
-            > UnionFn for Tmp<F, Uo, Ui, In0, In1>
+                Ui: Map,
+            > BaseFn for Tmp<F, Uo, Ui, In0, In1>
         {
             type Out = Ui::Wrap<F::Out>;
-
-            fn union(
-                x: Either<impl Impl<Self::Out>, impl Impl<Self::Out>>,
-            ) -> impl Impl<Self::Out> {
-                Ui::union::<F>(x)
-            }
         }
         impl<
                 In0: ?Sized + Trait,
                 In1: ?Sized + Trait,
-                F: SelectFn<Composition<Uo, Ui>, In0, In1>,
+                F: SelectFn<In0, In1>,
                 Uo: Wrap,
-                Ui: Map + Union,
-            > SelectFn<Uo, Ui::Wrap<In0>, Ui::Wrap<In1>> for Tmp<F, Uo, Ui, In0, In1>
+                Ui: Map + Transpose + Pure,
+            > SelectFn<Ui::Wrap<In0>, Ui::Wrap<In1>> for Tmp<F, Uo, Ui, In0, In1>
         {
+            type Tr0 = F::Tr0;
+            type Tr1 = F::Tr1;
+
             fn run0(
                 self,
                 x: impl Impl<Ui::Wrap<In0>>,
-                y: impl Impl<Uo::Wrap<Ui::Wrap<In1>>>,
-            ) -> impl Impl<Self::Out> {
-                Ui::map(x, SelectMap::<Composition<Uo, Ui>, In1>::run0(y, self.0))
+            ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr0>> {
+                match Ui::either(x) {
+                    Either::Left(x) => match self.0.run0(x) {
+                        Either::Left(x) => Either::Left(Either::Left(Ui::pure(x))),
+                        Either::Right(x) => Either::Right(x),
+                    },
+                    Either::Right(x) => Either::Left(Either::Right(x)),
+                }
+                .map_left(Trait::union)
             }
 
             fn run1(
                 self,
                 x: impl Impl<Ui::Wrap<In1>>,
-                y: impl Impl<Uo::Wrap<Ui::Wrap<In0>>>,
-            ) -> impl Impl<Self::Out> {
-                Ui::map(x, SelectMap::<Composition<Uo, Ui>, In0>::run1(y, self.0))
+            ) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr1>> {
+                match Ui::either(x) {
+                    Either::Left(x) => match self.0.run1(x) {
+                        Either::Left(x) => Either::Left(Either::Left(Ui::pure(x))),
+                        Either::Right(x) => Either::Right(x),
+                    },
+                    Either::Right(x) => Either::Left(Either::Right(x)),
+                }
+                .map_left(Trait::union)
+            }
+
+            fn run01(x: impl Impl<Self::Tr0>, y: impl Impl<Ui::Wrap<In1>>) -> impl Impl<Self::Out> {
+                Ui::map(y, SelectMap01::<_, F, In0>::new(x))
+            }
+
+            fn run10(x: impl Impl<Self::Tr1>, y: impl Impl<Ui::Wrap<In0>>) -> impl Impl<Self::Out> {
+                Ui::map(y, SelectMap10::<_, F, In1>::new(x))
             }
         }
 
@@ -166,7 +164,20 @@ impl<Uo: Flatten + Map + Pure, Ui: Flatten + Transpose> Flatten for Composition<
     }
 }
 
-impl<Uo: Transpose + Map, Ui: Transpose> Transpose for Composition<Uo, Ui> {
+impl<Uo: Transpose + Map + Pure, Ui: Transpose> Transpose for Composition<Uo, Ui> {
+    fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
+        x: impl Impl<Self::Wrap<In>>,
+    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
+        match Uo::either::<Ui::Wrap<In>, Ui::Wrap<Out>>(x) {
+            Either::Left(x) => match Ui::either::<In, Out>(x) {
+                Either::Left(x) => Either::Left(x),
+                Either::Right(x) => Either::Right(Either::Left(Uo::pure::<Ui::Wrap<Out>>(x))),
+            },
+            Either::Right(x) => Either::Right(Either::Right(x)),
+        }
+        .map_right(Trait::union)
+    }
+
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {

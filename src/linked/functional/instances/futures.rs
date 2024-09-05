@@ -2,7 +2,7 @@ use either::Either;
 use futures::future::select;
 
 use crate::linked::{
-    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Union, UnionFn, Wrap},
+    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Wrap},
     traits::future::{ToFuture, ToFutureExt},
     Impl, Trait,
 };
@@ -41,30 +41,32 @@ impl Map2 for Futures {
     }
 }
 
-impl Union for Futures {
-    fn union<F: UnionFn>(
-        x: Either<impl Impl<Self::Wrap<F::Out>>, impl Impl<Self::Wrap<F::Out>>>,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        async {
-            F::union(match x {
-                Either::Left(x) => Either::Left(x.to_future().await),
-                Either::Right(x) => Either::Right(x.to_future().await),
-            })
-        }
-    }
-}
-
 impl Select for Futures {
-    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<Self, In0, In1>>(
+    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
         async {
-            F::union(
-                match select(Box::pin(x0.to_future()), Box::pin(x1.to_future())).await {
-                    futures::future::Either::Left((x, y)) => Either::Left(f.run0(x, y)),
-                    futures::future::Either::Right((x, y)) => Either::Right(f.run1(x, y)),
+            Trait::union(
+                match select(
+                    std::pin::pin!(x0.to_future()),
+                    std::pin::pin!(x1.to_future()),
+                )
+                .await
+                {
+                    futures::future::Either::Left((x, y)) => {
+                        Either::Left(Trait::union(match f.run0(x) {
+                            Either::Left(x) => Either::Left(x),
+                            Either::Right(x) => Either::Right(F::run01(x, y.await)),
+                        }))
+                    }
+                    futures::future::Either::Right((x, y)) => {
+                        Either::Right(Trait::union(match f.run1(x) {
+                            Either::Left(x) => Either::Left(x),
+                            Either::Right(x) => Either::Right(F::run10(x, y.await)),
+                        }))
+                    }
                 },
             )
         }

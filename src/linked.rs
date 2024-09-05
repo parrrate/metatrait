@@ -1,3 +1,5 @@
+use either::Either;
+
 pub mod functional;
 pub mod traits;
 
@@ -5,6 +7,9 @@ pub trait Trait {
     type Assocaited: ?Sized + Trait;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>>;
     type Out<'out, Imp: Impl<Self>>;
+    type Sample: Impl<Self>;
+
+    fn union(_: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self>;
 }
 
 pub trait Impl<Tr: ?Sized + Trait>: Sized {
@@ -13,3 +18,5 @@ pub trait Impl<Tr: ?Sized + Trait>: Sized {
     where
         Self: 'tmp;
 }
+
+pub type Sample<Tr> = <Tr as Trait>::Sample;

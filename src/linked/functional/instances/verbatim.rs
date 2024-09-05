@@ -1,11 +1,8 @@
 use either::Either;
 
 use crate::linked::{
-    functional::{
-        Flatten, Map, Map2, MapExt, MapFn, MapFn2, Pure, Select, SelectFn, Transpose, Union,
-        UnionFn, Wrap,
-    },
-    Impl, Trait,
+    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Transpose, Wrap},
+    Impl, Sample, Trait,
 };
 
 pub struct Verbatim;
@@ -39,21 +36,13 @@ impl Map2 for Verbatim {
     }
 }
 
-impl Union for Verbatim {
-    fn union<F: UnionFn>(
-        x: Either<impl Impl<Self::Wrap<F::Out>>, impl Impl<Self::Wrap<F::Out>>>,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        F::union(x)
-    }
-}
-
 impl Select for Verbatim {
-    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<Self, In0, In1>>(
+    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        Self::select_0(x0, x1, f)
+        Trait::union(f.run0(x0).map_right(|x0| F::run01(x0, x1)))
     }
 }
 
@@ -66,6 +55,12 @@ impl Flatten for Verbatim {
 }
 
 impl Transpose for Verbatim {
+    fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
+        x: impl Impl<Self::Wrap<In>>,
+    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
+        Either::<_, Sample<Self::Wrap<Out>>>::Left(x)
+    }
+
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
