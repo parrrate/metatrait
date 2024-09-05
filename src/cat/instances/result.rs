@@ -6,17 +6,14 @@ pub type Results<E> = BaseInstance<crate::base::instances::result::Results<E>>;
 mod test {
     use crate::{
         cat::functor::*,
-        traits::{
-            base::BaseExt,
-            is::{Is, IsExt},
-        },
+        traits::{base::BaseExt, is::IsExt},
     };
 
     use super::*;
 
     #[test]
     fn test() {
-        let x = Results::<()>::pure::<Is<_>>(0);
+        let x = Results::<()>::pure(0);
         let x = Results::<()>::map(x, |x| x + 1);
         let x = Results::<()>::map(x, |x| x + 1);
         let x = Results::<()>::map(x, |x| x + 1);
