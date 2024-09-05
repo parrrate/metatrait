@@ -92,7 +92,7 @@ impl<WrB: ?Sized + BaseMap + BaseToEither + BasePure> Transpose for BaseInstance
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
         Trait::union(match Self::either::<_, Tr>(x.into_base()) {
-            Either::Left(x) => Either::Left(Wr::map(x, PureFn::<Self, _>)),
+            Either::Left(x) => Either::Left(x.w_map(PureFn::<Self, _>)),
             Either::Right(x) => Either::Right(Wr::pure(x)),
         })
     }

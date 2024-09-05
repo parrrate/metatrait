@@ -2,10 +2,7 @@ use std::marker::PhantomData;
 
 use either::Either;
 
-use crate::{
-    base::functor::{BaseMap, BaseUnwrap},
-    Impl, Trait,
-};
+use crate::{base::functor::*, Impl, Trait};
 
 pub struct Base<Wr: ?Sized, Tr: ?Sized>(PhantomData<Wr>, Tr);
 
@@ -16,13 +13,11 @@ impl<Wr: ?Sized + BaseMap, Tr: ?Sized + Trait> Trait for Base<Wr, Tr> {
     type Sample = Wr::Wrap<Tr::Sample>;
 
     fn union(x: Either<impl crate::Impl<Self>, impl crate::Impl<Self>>) -> impl crate::Impl<Self> {
-        Wr::map(
-            match x {
-                Either::Left(x) => Wr::map(x.into_base(), Either::Left),
-                Either::Right(x) => Wr::map(x.into_base(), Either::Right),
-            },
-            Trait::union,
-        )
+        match x {
+            Either::Left(x) => x.into_base().b_map(Either::Left),
+            Either::Right(x) => x.into_base().b_map(Either::Right),
+        }
+        .b_map(Trait::union)
     }
 }
 
