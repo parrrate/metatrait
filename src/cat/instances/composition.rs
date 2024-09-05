@@ -197,7 +197,7 @@ impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "futures"))]
 mod test {
     use crate::{
         cat::instances::{futures::Futures, lazy::Lazy},
