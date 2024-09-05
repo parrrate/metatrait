@@ -11,12 +11,20 @@ impl<That> Trait for Is<That> {
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = That;
     type Sample = That;
+    type Common<'a> = That where Self: 'a;
 
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
         match x {
             Either::Left(x) => x.into_that(),
             Either::Right(x) => x.into_that(),
         }
+    }
+
+    fn common<'a>(x: impl 'a + Impl<Self>) -> Self::Common<'a>
+    where
+        Self: 'a,
+    {
+        x.into_that()
     }
 }
 
