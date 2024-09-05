@@ -4,7 +4,7 @@ use crate::base::functor::*;
 
 pub struct Options;
 
-impl<T> BaseUnwrap<Options> for Option<T> {
+impl<T> BaseUnwrap<Option<T>> for Options {
     type T = T;
 }
 

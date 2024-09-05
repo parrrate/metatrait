@@ -8,7 +8,7 @@ use crate::base::functor::*;
 #[phantom]
 pub struct Results<E>;
 
-impl<T, E> BaseUnwrap<Results<E>> for Result<T, E> {
+impl<T, E> BaseUnwrap<Result<T, E>> for Results<E> {
     type T = T;
 }
 
