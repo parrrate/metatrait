@@ -41,7 +41,7 @@ impl<F: MapFn<In>, Wr: ?Sized + Map, In: ?Sized + Trait> MapFn<Wr::Wrap<In>>
 }
 
 impl<WrO: Map, WrI: Map> Map for Composition<WrO, WrI> {
-    fn map<In: ?Sized + Trait, F: MapFn<In>>(
+    fn map<F: MapFn<In>, In: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
@@ -79,7 +79,7 @@ impl<F: MapFn2<In0, In1>, Wr: ?Sized + Map2, In0: ?Sized + Trait, In1: ?Sized + 
 }
 
 impl<WrO: Map2, WrI: Map2> Map2 for Composition<WrO, WrI> {
-    fn map2<In0: ?Sized + Trait, In1: ?Sized + Trait, F: MapFn2<In0, In1>>(
+    fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
@@ -151,7 +151,7 @@ impl<
 }
 
 impl<WrO: Select, WrI: Map + Transpose + Pure> Select for Composition<WrO, WrI> {
-    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
+    fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,

@@ -54,14 +54,14 @@ pub trait Pure: Wrap {
 }
 
 pub trait Map: Wrap {
-    fn map<In: ?Sized + Trait, F: MapFn<In>>(
+    fn map<F: MapFn<In>, In: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In>>,
         _: F,
     ) -> impl Impl<Self::Wrap<F::Out>>;
 }
 
 pub trait Map2: Wrap {
-    fn map2<In0: ?Sized + Trait, In1: ?Sized + Trait, F: MapFn2<In0, In1>>(
+    fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In0>>,
         _: impl Impl<Self::Wrap<In1>>,
         _: F,
@@ -69,7 +69,7 @@ pub trait Map2: Wrap {
 }
 
 pub trait Select: Wrap {
-    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
+    fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In0>>,
         _: impl Impl<Self::Wrap<In1>>,
         _: F,
@@ -106,13 +106,13 @@ pub trait Transpose: Wrap {
 #[phantom]
 pub struct TransposeFn<Uo: ?Sized, Ui: ?Sized, Tr: ?Sized>;
 
-impl<Uo: ?Sized + Pure + Map, Ui: ?Sized + Transpose, Tr: ?Sized + Trait>
-    MapFn<Ui::Wrap<Uo::Wrap<Tr>>> for TransposeFn<Uo, Ui, Tr>
+impl<WrO: ?Sized + Pure + Map, WrI: ?Sized + Transpose, Tr: ?Sized + Trait>
+    MapFn<WrI::Wrap<WrO::Wrap<Tr>>> for TransposeFn<WrO, WrI, Tr>
 {
-    type Out = Uo::Wrap<Ui::Wrap<Tr>>;
+    type Out = WrO::Wrap<WrI::Wrap<Tr>>;
 
-    fn run(self, x: impl Impl<Ui::Wrap<Uo::Wrap<Tr>>>) -> impl Impl<Self::Out> {
-        Ui::transpose::<Uo, Tr>(x)
+    fn run(self, x: impl Impl<WrI::Wrap<WrO::Wrap<Tr>>>) -> impl Impl<Self::Out> {
+        WrI::transpose::<WrO, Tr>(x)
     }
 }
 
