@@ -2,7 +2,7 @@ use either::Either;
 
 use crate::{
     base::functor::*,
-    cat::{functor::*, morphism::*},
+    cat::{functor::*, morphism::*, util::PureFn},
     traits::base::{Base, BaseExt},
     Impl, Trait,
 };
@@ -84,5 +84,16 @@ impl<WrB: ?Sized + BaseMap + BaseToEither> ToEither for BaseInstance<WrB> {
             Either::Left(x) => Either::Left(x),
             Either::Right(x) => Either::Right(x),
         }
+    }
+}
+
+impl<WrB: ?Sized + BaseMap + BaseToEither + BasePure> Transpose for BaseInstance<WrB> {
+    fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
+        x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
+    ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
+        Trait::union(match Self::either::<_, Tr>(x.into_base()) {
+            Either::Left(x) => Either::Left(Wr::map(x, PureFn::<Self, _>)),
+            Either::Right(x) => Either::Right(Wr::pure(x)),
+        })
     }
 }
