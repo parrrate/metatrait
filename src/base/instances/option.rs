@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::base::functor::*;
+use crate::{base::functor::*, existence::Sometimes};
 
 pub struct Options;
 
@@ -54,13 +54,13 @@ impl BaseFlatten for Options {
 }
 
 impl BaseToEither for Options {
-    type L = ();
-    type R = ();
+    type L = Sometimes;
+    type R = Sometimes;
 
     fn either<In, Out>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
         match x {
-            Some(x) => Either::Left((x, ())),
-            None => Either::Right((None, ())),
+            Some(x) => Either::Left((x, Sometimes)),
+            None => Either::Right((None, Sometimes)),
         }
     }
 }

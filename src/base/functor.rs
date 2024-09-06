@@ -1,5 +1,7 @@
 use either::Either;
 
+use crate::existence::When;
+
 pub trait BaseUnwrap<T>: BaseWrap<Wrap<Self::T> = T> {
     type T;
 }
@@ -51,8 +53,8 @@ pub type BaseToEitherWrap<Wr, In, Out> =
     Either<(In, <Wr as BaseToEither>::L), (<Wr as BaseWrap>::Wrap<Out>, <Wr as BaseToEither>::R)>;
 
 pub trait BaseToEither: BaseWrap {
-    type L;
-    type R;
+    type L: When;
+    type R: When;
     fn either<In, Out>(_: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out>;
 }
 

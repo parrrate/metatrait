@@ -1,9 +1,8 @@
-use std::convert::Infallible;
-
 use either::Either;
 
 use crate::{
     cat::{functor::*, morphism::*},
+    existence::{Never, Sometimes},
     traits::is::IsExt,
     Impl, Sample, Trait,
 };
@@ -73,13 +72,13 @@ impl Iterate for Verbatim {
 }
 
 impl ToEither for Verbatim {
-    type L = ();
-    type R = Infallible;
+    type L = Sometimes;
+    type R = Never;
 
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
     ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)> {
-        Either::<_, (Sample<Self::Wrap<Out>>, _)>::Left((x, ()))
+        Either::<_, (Sample<Self::Wrap<Out>>, _)>::Left((x, Sometimes))
     }
 }
 

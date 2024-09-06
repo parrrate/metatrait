@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::{Impl, Trait};
+use crate::{existence::When, Impl, Trait};
 
 use super::morphism::*;
 
@@ -61,8 +61,8 @@ pub trait Iterate: Wrap {
 }
 
 pub trait ToEither: Wrap {
-    type L;
-    type R;
+    type L: When;
+    type R: When;
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In>>,
     ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)>;
