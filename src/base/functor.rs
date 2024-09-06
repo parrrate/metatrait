@@ -2,6 +2,8 @@ use either::Either;
 
 use crate::existence::When;
 
+use super::morphism::*;
+
 pub trait BaseUnwrap<T>: BaseWrap<Wrap<Self::T> = T> {
     type T;
 }
@@ -47,6 +49,10 @@ pub trait BaseSelect: BaseWrap {
 
 pub trait BaseFlatten: BaseWrap {
     fn flatten<T>(_: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T>;
+}
+
+pub trait BaseIterate: BaseWrap {
+    fn iterate<F: BaseIterateFn<Self>>(_: F) -> Self::Wrap<F::Out>;
 }
 
 pub type BaseToEitherWrap<Wr, In, Out> =

@@ -92,7 +92,7 @@ impl Iterate for Futures {
     fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
         async move {
             loop {
-                match f.done() {
+                match f.run() {
                     Either::Left(x) => break x,
                     Either::Right(next) => f = next.to_future().await.into_that(),
                 }
