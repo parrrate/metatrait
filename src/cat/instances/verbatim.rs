@@ -3,7 +3,7 @@ use either::Either;
 use crate::{
     cat::{functor::*, morphism::*},
     existence::{Never, Sometimes},
-    traits::is::IsExt,
+    traits::either::IntoEitherExt,
     Impl, Sample, Trait,
 };
 
@@ -63,9 +63,9 @@ impl Flatten for Verbatim {
 impl Iterate for Verbatim {
     fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
         loop {
-            match f.run() {
-                Either::Left(x) => break x,
-                Either::Right(next) => f = next.into_that(),
+            match f.run().into_either() {
+                Either::Left(next) => f = next,
+                Either::Right(x) => break x,
             }
         }
     }

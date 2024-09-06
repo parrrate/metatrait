@@ -62,12 +62,12 @@ impl<E> BaseFlatten for Results<E> {
 
 impl<E> BaseIterate for Results<E> {
     fn iterate<F: BaseIterateFn<Self>>(mut f: F) -> Self::Wrap<F::Out> {
-        loop {
-            match f.run() {
-                Either::Left(x) => break Ok(x),
-                Either::Right(next) => f = next?,
+        Ok(loop {
+            match f.run()? {
+                Either::Left(next) => f = next,
+                Either::Right(x) => break x,
             }
-        }
+        })
     }
 }
 

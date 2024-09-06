@@ -58,12 +58,12 @@ impl BaseFlatten for Options {
 
 impl BaseIterate for Options {
     fn iterate<F: BaseIterateFn<Self>>(mut f: F) -> Self::Wrap<F::Out> {
-        loop {
-            match f.run() {
-                Either::Left(x) => break Some(x),
-                Either::Right(next) => f = next?,
+        Some(loop {
+            match f.run()? {
+                Either::Left(next) => f = next,
+                Either::Right(x) => break x,
             }
-        }
+        })
     }
 }
 

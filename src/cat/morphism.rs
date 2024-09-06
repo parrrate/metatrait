@@ -1,11 +1,14 @@
 use either::Either;
 
 use crate::{
-    traits::is::{Is, IsExt},
+    traits::{
+        either::IntoEither,
+        is::{Is, IsExt},
+    },
     Impl, Trait,
 };
 
-use super::{functor::Wrap, util::Wraps};
+use super::functor::Wrap;
 
 pub trait MapFn<In: ?Sized + Trait> {
     type Out: ?Sized + Trait;
@@ -40,5 +43,5 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: TraitFn {
 }
 
 pub trait IterateFn<Wr: ?Sized + Wrap>: TraitFn {
-    fn run(self) -> Either<impl Impl<Self::Out>, impl Wraps<Wr, Self>>;
+    fn run(self) -> impl Impl<Wr::Wrap<IntoEither<Self, Self::Out>>>;
 }

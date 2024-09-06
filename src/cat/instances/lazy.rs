@@ -3,7 +3,7 @@ use either::Either;
 use crate::{
     cat::{functor::*, morphism::*},
     traits::{
-        is::IsExt,
+        either::IntoEitherExt,
         to::{To, ToExt},
     },
     Impl, Trait,
@@ -65,9 +65,9 @@ impl Flatten for Lazy {
 impl Iterate for Lazy {
     fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
         || loop {
-            match f.run() {
-                Either::Left(x) => break x,
-                Either::Right(next) => f = next.to().into_that(),
+            match f.run().to().into_either() {
+                Either::Left(next) => f = next,
+                Either::Right(x) => break x,
             }
         }
     }
