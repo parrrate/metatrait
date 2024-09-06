@@ -2,9 +2,9 @@ use either::Either;
 
 use crate::{Impl, Trait};
 
-pub struct ToEither<L, Tr: ?Sized>(L, Tr);
+pub struct AsEither<L, Tr: ?Sized>(L, Tr);
 
-impl<L, Tr: ?Sized + Trait> Trait for ToEither<L, Tr> {
+impl<L, Tr: ?Sized + Trait> Trait for AsEither<L, Tr> {
     type Assocaited = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Either<L, Imp::Associated>;
@@ -29,12 +29,12 @@ impl<L, Tr: ?Sized + Trait> Trait for ToEither<L, Tr> {
     }
 }
 
-impl<L, Tr: ?Sized + Trait, T: Impl<Tr>> Impl<ToEither<L, Tr>> for Either<L, T> {
+impl<L, Tr: ?Sized + Trait, T: Impl<Tr>> Impl<AsEither<L, Tr>> for Either<L, T> {
     type Associated = T;
 
     fn method<'out: 'tmp, 'tmp>(
-        x: <ToEither<L, Tr> as Trait>::In<'out, 'tmp, Self>,
-    ) -> <ToEither<L, Tr> as Trait>::Out<'out, Self>
+        x: <AsEither<L, Tr> as Trait>::In<'out, 'tmp, Self>,
+    ) -> <AsEither<L, Tr> as Trait>::Out<'out, Self>
     where
         Self: 'tmp,
     {
@@ -42,10 +42,10 @@ impl<L, Tr: ?Sized + Trait, T: Impl<Tr>> Impl<ToEither<L, Tr>> for Either<L, T> 
     }
 }
 
-pub trait ToEitherExt<L, Tr: ?Sized + Trait>: Impl<ToEither<L, Tr>> {
+pub trait ToEitherExt<L, Tr: ?Sized + Trait>: Impl<AsEither<L, Tr>> {
     fn to_either(self) -> Either<L, impl Impl<Tr>> {
         Self::method(self)
     }
 }
 
-impl<L, Tr: ?Sized + Trait, T: Impl<ToEither<L, Tr>>> ToEitherExt<L, Tr> for T {}
+impl<L, Tr: ?Sized + Trait, T: Impl<AsEither<L, Tr>>> ToEitherExt<L, Tr> for T {}
