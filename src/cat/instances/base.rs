@@ -104,13 +104,14 @@ impl<
 
 impl<WrB: ?Sized + BaseIterate + BaseMap> Iterate for BaseInstance<WrB> {
     fn iterate<F: IterateFn<Self>>(f: F) -> impl Impl<Self::Wrap<F::Out>> {
-        WrB::iterate(IterateBase(
+        IterateBase(
             f,
             F::run,
             BaseExt::into_base,
             IntoEitherExt::into_either,
             PhantomData,
-        ))
+        )
+        .run_iterate()
     }
 }
 
