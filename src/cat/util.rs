@@ -1,8 +1,15 @@
 use std::{convert::Infallible, marker::PhantomData};
 
+use either::Either;
 use ghost::phantom;
 
-use crate::{traits::is::Is, Impl, Trait};
+use crate::{
+    traits::{
+        either::IntoEither,
+        is::{Is, IsExt},
+    },
+    Impl, Trait,
+};
 
 use super::{functor::*, morphism::*};
 
@@ -160,3 +167,13 @@ pub trait Wraps<Wr: ?Sized + Wrap, T>: Impl<Wr::Wrap<Is<T>>> {}
 impl<Wr: ?Sized + Wrap, T, To: Impl<Wr::Wrap<Is<T>>>> Wraps<Wr, T> for To {}
 
 pub type WrapCommon<'a, Wr, T> = <<Wr as Wrap>::Wrap<Is<T>> as Trait>::Common<'a>;
+
+pub struct IsToEither;
+
+impl<L, R> MapFn<Is<Either<L, R>>> for IsToEither {
+    type Out = IntoEither<L, Is<R>>;
+
+    fn run(self, x: impl Impl<Is<Either<L, R>>>) -> impl Impl<Self::Out> {
+        x.into_that()
+    }
+}

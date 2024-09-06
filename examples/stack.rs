@@ -1,6 +1,11 @@
 use either::Either;
 use metatrait::{
-    cat::{functor::*, instances::verbatim::Verbatim, morphism::*, util::Wraps},
+    cat::{
+        functor::*,
+        instances::verbatim::Verbatim,
+        morphism::*,
+        util::{IsToEither, Wraps},
+    },
     traits::{
         either::IntoEither,
         is::{Is, IsExt},
@@ -34,16 +39,6 @@ struct Count<F>(usize, F);
 
 impl<F: Fetch> TraitFn for Count<F> {
     type Out = Is<usize>;
-}
-
-struct IsToEither;
-
-impl<L, R> MapFn<Is<Either<L, R>>> for IsToEither {
-    type Out = IntoEither<L, Is<R>>;
-
-    fn run(self, x: impl Impl<Is<Either<L, R>>>) -> impl Impl<Self::Out> {
-        x.into_that()
-    }
 }
 
 impl<T, F: Fetch<T = Stack<T, F>>> IterateFn<F::Wr> for Count<F> {
