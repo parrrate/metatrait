@@ -219,7 +219,7 @@ impl<F: IterateFn<Composition<WrO, WrI>>, WrO: Map, WrI: Transpose> IterateFn<Wr
 
 impl<WrO: Map + Iterate, WrI: Transpose> Iterate for Composition<WrO, WrI> {
     fn iterate<F: IterateFn<Self>>(f: F) -> impl Impl<Self::Wrap<F::Out>> {
-        WrO::iterate(CompositionIterate(f, PhantomData))
+        CompositionIterate(f, PhantomData).run_iterate()
     }
 }
 
