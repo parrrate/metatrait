@@ -1,9 +1,12 @@
 use either::Either;
 
 use crate::{
-    base::functor::*,
+    base::{functor::*, morphism::*},
     cat::{functor::*, morphism::*, util::PureFn},
-    traits::base::{Base, BaseExt},
+    traits::{
+        base::{Base, BaseExt},
+        is::{Is, IsExt},
+    },
     Impl, Trait,
 };
 
@@ -73,6 +76,23 @@ impl<WrB: ?Sized + BaseMap + BaseFlatten> Flatten for BaseInstance<WrB> {
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
         x.into_base().b_map(|x| x.into_base()).b_flatten()
+    }
+}
+
+struct IterateBase<F, X>(F, X);
+
+impl<WrB: ?Sized + BaseMap, F, X: Copy + Fn(F) -> Either<L, R>, L, R: Impl<Base<WrB, Is<F>>>>
+    BaseIterateFn<WrB> for IterateBase<F, X>
+{
+    type Out = L;
+    fn run(self) -> Either<Self::Out, <WrB as BaseWrap>::Wrap<Self>> {
+        self.1(self.0).map_right(|x| x.into_base().b_map(move |x| Self(x.into_that(), self.1)))
+    }
+}
+
+impl<WrB: ?Sized + BaseIterate + BaseMap> Iterate for BaseInstance<WrB> {
+    fn iterate<F: IterateFn<Self>>(f: F) -> impl Impl<Self::Wrap<F::Out>> {
+        WrB::iterate(IterateBase(f, F::run))
     }
 }
 
