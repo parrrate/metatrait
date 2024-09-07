@@ -5,7 +5,7 @@ use crate::{
         either::IntoEither,
         is::{Is, IsExt},
     },
-    Impl, Trait,
+    Impl, Structural, Trait,
 };
 
 use super::functor::*;
@@ -53,3 +53,8 @@ pub trait IterateFnExt<Wr: ?Sized + Iterate>: IterateFn<Wr> {
 }
 
 impl<Wr: ?Sized + Iterate, F: IterateFn<Wr>> IterateFnExt<Wr> for F {}
+
+pub trait InspectFn<In: ?Sized + Trait, Wr: ?Sized + Wrap> {
+    type Out: ?Sized + Structural;
+    fn run(self, _: &mut impl Impl<In>) -> impl Impl<Wr::Wrap<Self::Out>>;
+}

@@ -7,7 +7,7 @@ use crate::{
         either::IntoEitherExt,
         future::{ToFuture, ToFutureExt},
     },
-    Impl, Trait,
+    Impl, StructuralExt, Trait,
 };
 
 pub struct Futures;
@@ -98,6 +98,15 @@ impl Iterate for Futures {
                 }
             }
         }
+    }
+}
+
+impl Inspect for Futures {
+    fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
+        x: impl Impl<Self::Wrap<In>>,
+        f: F,
+    ) -> impl Impl<Self::Wrap<F::Out>> {
+        async { f.run(&mut x.to_future().await).to_future().await.free() }
     }
 }
 
