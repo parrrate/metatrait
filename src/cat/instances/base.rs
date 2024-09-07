@@ -9,7 +9,7 @@ use crate::{
         base::{Base, BaseExt},
         either::{IntoEither, IntoEitherExt},
     },
-    Impl, Trait,
+    FreeExt, Impl, Trait,
 };
 
 pub struct BaseInstance<WrB: ?Sized>(WrB);
@@ -137,5 +137,14 @@ impl<WrB: ?Sized + BaseMap + BaseToEither + BasePure> Transpose for BaseInstance
             Either::Left((x, _)) => Either::Left(x.w_map(PureFn::<Self, _>)),
             Either::Right((x, _)) => Either::Right(Wr::pure(x)),
         })
+    }
+}
+
+impl<WrB: ?Sized + BaseMap + BaseInspect> Inspect for BaseInstance<WrB> {
+    fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
+        x: impl Impl<Self::Wrap<In>>,
+        f: F,
+    ) -> impl Impl<Self::Wrap<F::Out>> {
+        WrB::inspect(x.into_base(), |x| f.run(x).into_base().b_map(FreeExt::free))
     }
 }

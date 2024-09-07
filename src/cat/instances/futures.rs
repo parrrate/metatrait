@@ -7,7 +7,7 @@ use crate::{
         either::IntoEitherExt,
         future::{ToFuture, ToFutureExt},
     },
-    Impl, StructuralExt, Trait,
+    FreeExt, Impl, Trait,
 };
 
 pub struct Futures;

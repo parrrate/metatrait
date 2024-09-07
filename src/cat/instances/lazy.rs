@@ -6,7 +6,7 @@ use crate::{
         either::IntoEitherExt,
         to::{To, ToExt},
     },
-    Impl, StructuralExt, Trait,
+    FreeExt, Impl, Trait,
 };
 
 pub struct Lazy;

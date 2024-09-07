@@ -4,7 +4,7 @@ use crate::{
     cat::{functor::*, morphism::*},
     existence::{Never, Sometimes},
     traits::either::IntoEitherExt,
-    Impl, Sample, StructuralExt, Trait,
+    FreeExt, Impl, Sample, Trait,
 };
 
 pub struct Verbatim;
