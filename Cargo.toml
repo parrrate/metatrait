@@ -3,6 +3,17 @@ name = "metatrait"
 version = "0.0.0-alpha.0"
 edition = "2021"
 rust-version = "1.80"
+publish = true
+description = "RPITIT Monads"
+documentation = "https://docs.rs/metatrait"
+keywords = ["async"]
+categories = ["asynchronous"]
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+authors = [
+    "Alisa Feistel <alisafeistel@gmail.com>",
+    "T.A. Prikhodko <tim@ongoteam.yaconnect.com>",
+]
 
 [dependencies]
 either = "1.13.0"
