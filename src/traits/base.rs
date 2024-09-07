@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use either::Either;
 
-use crate::{base::functor::*, Impl, Trait};
+use crate::{base::functor::*, Free, Impl, Trait};
 
 pub struct Base<Wr: ?Sized, Tr: ?Sized>(PhantomData<Wr>, Tr);
 
@@ -54,3 +54,11 @@ pub trait BaseExt<Tr: ?Sized + Trait> {
 }
 
 impl<That, Tr: ?Sized + Trait> BaseExt<Tr> for That {}
+
+impl<Wr: ?Sized + BaseMap, Tr: ?Sized + Free> Free for Base<Wr, Tr> {
+    type Free = Wr::Wrap<Tr::Free>;
+
+    fn free(x: impl Impl<Self>) -> Self::Free {
+        x.into_base().b_map(Free::free)
+    }
+}
