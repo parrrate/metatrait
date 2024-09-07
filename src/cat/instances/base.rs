@@ -9,7 +9,7 @@ use crate::{
         base::{Base, BaseExt},
         either::{IntoEither, IntoEitherExt},
     },
-    FreeExt, Impl, Trait,
+    Free, Impl, Trait,
 };
 
 pub struct BaseInstance<WrB: ?Sized>(WrB);
@@ -145,6 +145,6 @@ impl<WrB: ?Sized + BaseMap + BaseInspect> Inspect for BaseInstance<WrB> {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        WrB::inspect(x.into_base(), |x| f.run(x).into_base().b_map(FreeExt::free))
+        WrB::inspect(x.into_base(), |x| f.run(x).into_base().b_map(Free::free))
     }
 }
