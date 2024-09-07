@@ -8,8 +8,8 @@ rust-version = "1.80"
 either = "1.13.0"
 futures = { version = "0.3.30", optional = true }
 ghost = "0.1.17"
-pin-project = "1.1.5"
+pin-project = { version = "1.1.5", optional = true }
 
 [features]
 default = ["futures"]
-futures = ["dep:futures"]
+futures = ["dep:futures", "dep:pin-project"]
