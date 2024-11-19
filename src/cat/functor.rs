@@ -101,7 +101,7 @@ pub trait WrappedMapExt<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrappe
     }
 }
 
-impl<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>, T: ?Sized + Impl<Tr>>
+impl<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>, T: Impl<Tr>>
     WrappedMapExt<Wr, Tr> for T
 {
 }
