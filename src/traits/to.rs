@@ -9,7 +9,10 @@ impl<Tr: ?Sized + Trait> Trait for To<Tr> {
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Imp::Associated;
     type Sample = fn() -> Tr::Sample;
-    type Common<'a> = Box<dyn 'a + FnOnce() -> Tr::Common<'a>> where Self: 'a;
+    type Common<'a>
+        = Box<dyn 'a + FnOnce() -> Tr::Common<'a>>
+    where
+        Self: 'a;
 
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
         || Trait::union(x.map_left(ToExt::to).map_right(ToExt::to))

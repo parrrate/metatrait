@@ -9,7 +9,8 @@ impl<L, Tr: ?Sized + Trait> Trait for IntoEither<L, Tr> {
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Either<L, Imp::Associated>;
     type Sample = Either<L, Tr::Sample>;
-    type Common<'a> = Either<L, Tr::Common<'a>>
+    type Common<'a>
+        = Either<L, Tr::Common<'a>>
     where
         Self: 'a;
 
