@@ -4,7 +4,7 @@ use crate::{
     cat::{functor::*, morphism::*},
     existence::{Never, Sometimes},
     traits::either::IntoEitherExt,
-    Impl, Sample, Trait,
+    Impl, Sample, StructuralExt, Trait,
 };
 
 pub struct Verbatim;
@@ -87,6 +87,15 @@ impl Transpose for Verbatim {
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
         x
+    }
+}
+
+impl Inspect for Verbatim {
+    fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
+        mut x: impl Impl<Self::Wrap<In>>,
+        f: F,
+    ) -> impl Impl<Self::Wrap<F::Out>> {
+        f.run(&mut x).free()
     }
 }
 
