@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 #[doc(no_inline)]
 pub use either::Either;
 
