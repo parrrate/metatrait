@@ -35,20 +35,25 @@ pub trait BaseMap2: BaseWrap {
     ) -> Self::Wrap<Out>;
 }
 
-pub type BaseEitherWrap<Wr, In0, In1> = <Wr as BaseWrap>::Wrap<
+pub type BaseSelectWrap<Wr, In0, In1> = <Wr as BaseWrap>::Wrap<
     Either<(In0, <Wr as BaseWrap>::Wrap<In1>), (In1, <Wr as BaseWrap>::Wrap<In0>)>,
 >;
 
 pub trait BaseSelect: BaseWrap {
-    fn select<In0, In1>(_: Self::Wrap<In0>, _: Self::Wrap<In1>) -> BaseEitherWrap<Self, In0, In1>;
+    fn select<In0, In1>(_: Self::Wrap<In0>, _: Self::Wrap<In1>) -> BaseSelectWrap<Self, In0, In1>;
 }
 
 pub trait BaseFlatten: BaseWrap {
     fn flatten<T>(_: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T>;
 }
 
+pub type BaseToEitherWrap<Wr, In, Out> =
+    Either<(In, <Wr as BaseToEither>::L), (<Wr as BaseWrap>::Wrap<Out>, <Wr as BaseToEither>::R)>;
+
 pub trait BaseToEither: BaseWrap {
-    fn either<In, Out>(_: Self::Wrap<In>) -> Either<In, Self::Wrap<Out>>;
+    type L;
+    type R;
+    fn either<In, Out>(_: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out>;
 }
 
 pub trait BaseTranspose: BaseWrap {

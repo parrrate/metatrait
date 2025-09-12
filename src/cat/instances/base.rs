@@ -77,9 +77,12 @@ impl<WrB: ?Sized + BaseMap + BaseFlatten> Flatten for BaseInstance<WrB> {
 }
 
 impl<WrB: ?Sized + BaseMap + BaseToEither> ToEither for BaseInstance<WrB> {
+    type L = WrB::L;
+    type R = WrB::R;
+
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
-    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
+    ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)> {
         match WrB::either::<_, Out::Sample>(x.into_base()) {
             Either::Left(x) => Either::Left(x),
             Either::Right(x) => Either::Right(x),
@@ -92,8 +95,8 @@ impl<WrB: ?Sized + BaseMap + BaseToEither + BasePure> Transpose for BaseInstance
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
         Trait::union(match Self::either::<_, Tr>(x.into_base()) {
-            Either::Left(x) => Either::Left(x.w_map(PureFn::<Self, _>)),
-            Either::Right(x) => Either::Right(Wr::pure(x)),
+            Either::Left((x, _)) => Either::Left(x.w_map(PureFn::<Self, _>)),
+            Either::Right((x, _)) => Either::Right(Wr::pure(x)),
         })
     }
 }

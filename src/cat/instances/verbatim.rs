@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+
 use either::Either;
 
 use crate::{
@@ -71,10 +73,13 @@ impl Iterate for Verbatim {
 }
 
 impl ToEither for Verbatim {
+    type L = ();
+    type R = Infallible;
+
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
-    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
-        Either::<_, Sample<Self::Wrap<Out>>>::Left(x)
+    ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)> {
+        Either::<_, (Sample<Self::Wrap<Out>>, _)>::Left((x, ()))
     }
 }
 

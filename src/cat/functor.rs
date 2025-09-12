@@ -61,9 +61,11 @@ pub trait Iterate: Wrap {
 }
 
 pub trait ToEither: Wrap {
+    type L;
+    type R;
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In>>,
-    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>>;
+    ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)>;
 }
 
 pub trait Transpose: Wrap {
