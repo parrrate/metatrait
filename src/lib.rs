@@ -3,6 +3,7 @@ pub use either::Either;
 
 pub mod base;
 pub mod cat;
+pub mod existence;
 pub mod traits;
 
 pub trait Trait {

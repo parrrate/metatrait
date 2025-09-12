@@ -3,7 +3,7 @@ use std::convert::identity;
 use either::Either;
 use ghost::phantom;
 
-use crate::base::functor::*;
+use crate::{base::functor::*, existence::Sometimes};
 
 #[phantom]
 pub struct Results<E>;
@@ -58,13 +58,13 @@ impl<E> BaseFlatten for Results<E> {
 }
 
 impl<E> BaseToEither for Results<E> {
-    type L = ();
-    type R = ();
+    type L = Sometimes;
+    type R = Sometimes;
 
     fn either<In, Out>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
         match x {
-            Ok(x) => Either::Left((x, ())),
-            Err(e) => Either::Right((Err(e), ())),
+            Ok(x) => Either::Left((x, Sometimes)),
+            Err(e) => Either::Right((Err(e), Sometimes)),
         }
     }
 }

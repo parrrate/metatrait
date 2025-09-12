@@ -8,6 +8,7 @@ use crate::{
         morphism::*,
         util::{FlattenFn, SelectMap01, SelectMap10, TransposeFn},
     },
+    existence::{Into2, When},
     Impl, Trait,
 };
 
@@ -185,21 +186,20 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
 }
 
 impl<WrO: ToEither + Pure, WrI: ToEither> ToEither for Composition<WrO, WrI> {
-    type L = (WrO::L, WrI::L);
-    type R = Either<WrO::R, WrI::R>;
+    type L = <WrO::L as When>::And<WrI::L>;
+    type R = <WrO::R as When>::Or<WrI::R>;
 
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
     ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)> {
         match WrO::either::<WrI::Wrap<In>, WrI::Wrap<Out>>(x) {
             Either::Left((x, eo)) => match WrI::either::<In, Out>(x) {
-                Either::Left((x, ei)) => Either::Left((x, (eo, ei))),
-                Either::Right((x, ei)) => Either::Right((
-                    Either::Left(WrO::pure::<WrI::Wrap<Out>>(x)),
-                    Either::Right(ei),
-                )),
+                Either::Left((x, ei)) => Either::Left((x, (eo, ei).into())),
+                Either::Right((x, ei)) => {
+                    Either::Right((Either::Left(WrO::pure::<WrI::Wrap<Out>>(x)), ei.into2()))
+                }
             },
-            Either::Right((x, eo)) => Either::Right((Either::Right(x), Either::Left(eo))),
+            Either::Right((x, eo)) => Either::Right((Either::Right(x), eo.into2())),
         }
         .map_right(|(x, e)| (Trait::union(x), e))
     }
