@@ -1,14 +1,22 @@
 use either::Either;
 
-pub trait BaseUnwrap<Wr: ?Sized + BaseWrap>: Sized
+pub trait BaseUnwrap<T>: BaseWrap<Wrap<Self::T> = T> {
+    type T;
+}
+
+pub trait BaseWrapped<Wr: ?Sized + BaseWrap>: Sized
 where
     Wr: BaseWrap<Wrap<Self::T> = Self>,
 {
     type T;
 }
 
+impl<Wr: ?Sized + BaseUnwrap<T>, T> BaseWrapped<Wr> for T {
+    type T = <Wr as BaseUnwrap<T>>::T;
+}
+
 pub trait BaseWrap {
-    type Wrap<T>: BaseUnwrap<Self, T = T>;
+    type Wrap<T>: BaseWrapped<Self, T = T>;
 }
 
 pub trait BasePure: BaseWrap {
@@ -61,19 +69,19 @@ pub trait BaseMonad: BaseApplicative + BaseFlatten {}
 
 impl<Wr: ?Sized + BaseApplicative + BaseFlatten> BaseMonad for Wr {}
 
-pub trait BaseWrappedMapExt<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>>: BaseUnwrap<Wr> {
+pub trait BaseWrappedMapExt<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>>: BaseWrapped<Wr> {
     fn b_map<Out>(self, f: impl FnOnce(Self::T) -> Out) -> Wr::Wrap<Out> {
         Wr::map(self, f)
     }
 }
 
-impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, To: BaseUnwrap<Wr>> BaseWrappedMapExt<Wr> for To {}
+impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, To: BaseWrapped<Wr>> BaseWrappedMapExt<Wr> for To {}
 
 pub trait BaseWrappedFlattenExt<
     Wr: ?Sized + BaseFlatten<Wrap<Ti> = Self> + BaseFlatten<Wrap<T> = Ti>,
-    Ti: BaseUnwrap<Wr, T = T>,
+    Ti: BaseWrapped<Wr, T = T>,
     T,
->: BaseUnwrap<Wr, T = Ti>
+>: BaseWrapped<Wr, T = Ti>
 {
     fn b_flatten(self) -> Ti {
         Wr::flatten::<T>(self)
@@ -82,9 +90,9 @@ pub trait BaseWrappedFlattenExt<
 
 impl<
         Wr: ?Sized + BaseFlatten<Wrap<Ti> = Self> + BaseFlatten<Wrap<T> = Ti>,
-        Ti: BaseUnwrap<Wr, T = T>,
+        Ti: BaseWrapped<Wr, T = T>,
         T,
-        To: BaseUnwrap<Wr, T = Ti>,
+        To: BaseWrapped<Wr, T = Ti>,
     > BaseWrappedFlattenExt<Wr, Ti, T> for To
 {
 }

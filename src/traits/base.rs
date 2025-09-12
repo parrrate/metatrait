@@ -29,7 +29,7 @@ impl<Wr: ?Sized + BaseMap, Tr: ?Sized + Trait> Trait for Base<Wr, Tr> {
     }
 }
 
-impl<Wr: ?Sized + BaseMap<Wrap<T::T> = T>, Tr: ?Sized + Trait, T: BaseUnwrap<Wr, T: Impl<Tr>>>
+impl<Wr: ?Sized + BaseMap<Wrap<T::T> = T>, Tr: ?Sized + Trait, T: BaseWrapped<Wr, T: Impl<Tr>>>
     Impl<Base<Wr, Tr>> for T
 {
     type Associated = T::T;
