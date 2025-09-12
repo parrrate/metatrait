@@ -67,7 +67,7 @@ impl BaseTranspose for Options {
         x: Self::Wrap<Wr::Wrap<T>>,
     ) -> Wr::Wrap<Self::Wrap<T>> {
         match x {
-            Some(x) => Wr::map(x, Some),
+            Some(x) => x.b_map(Some),
             None => Wr::pure(None),
         }
     }

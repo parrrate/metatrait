@@ -24,7 +24,7 @@ impl<WrB: ?Sized + BaseMap> Map for BaseInstance<WrB> {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        WrB::map(x.into_base(), |x| f.run(x))
+        x.into_base().b_map(|x| f.run(x))
     }
 }
 
@@ -44,27 +44,23 @@ impl<WrB: ?Sized + BaseMap + BaseSelect + BaseFlatten + BasePure> Select for Bas
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        WrB::flatten(WrB::map(WrB::select(x0.into_base(), x1.into_base()), |x| {
-            WrB::map(
+        WrB::select(x0.into_base(), x1.into_base())
+            .b_map(|x| {
                 match x {
-                    Either::Left((x, y)) => WrB::map(
-                        match f.run0(x) {
-                            Either::Left(x) => WrB::pure(Either::Left(x)),
-                            Either::Right(x) => WrB::map(y, |y| Either::Right(F::run01(x, y))),
-                        },
-                        |x| Either::Left(Trait::union(x)),
-                    ),
-                    Either::Right((x, y)) => WrB::map(
-                        match f.run1(x) {
-                            Either::Left(x) => WrB::pure(Either::Left(x)),
-                            Either::Right(x) => WrB::map(y, |y| Either::Right(F::run10(x, y))),
-                        },
-                        |x| Either::Right(Trait::union(x)),
-                    ),
-                },
-                Trait::union,
-            )
-        }))
+                    Either::Left((x, y)) => match f.run0(x) {
+                        Either::Left(x) => WrB::pure(Either::Left(x)),
+                        Either::Right(x) => y.b_map(|y| Either::Right(F::run01(x, y))),
+                    }
+                    .b_map(|x| Either::Left(Trait::union(x))),
+                    Either::Right((x, y)) => match f.run1(x) {
+                        Either::Left(x) => WrB::pure(Either::Left(x)),
+                        Either::Right(x) => y.b_map(|y| Either::Right(F::run10(x, y))),
+                    }
+                    .b_map(|x| Either::Right(Trait::union(x))),
+                }
+                .b_map(Trait::union)
+            })
+            .b_flatten()
     }
 }
 
@@ -72,7 +68,7 @@ impl<WrB: ?Sized + BaseMap + BaseFlatten> Flatten for BaseInstance<WrB> {
     fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
-        WrB::flatten(WrB::map(x.into_base(), |x| x.into_base()))
+        x.into_base().b_map(|x| x.into_base()).b_flatten()
     }
 }
 
