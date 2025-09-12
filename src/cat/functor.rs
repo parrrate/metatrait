@@ -96,5 +96,3 @@ impl<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>, TrO: ?Sized 
     WrappedMapExt<Wr, Tr> for TrO
 {
 }
-
-// fn funny_map<Wr: ?Sized + Map, Tr: ?, F: MapFn
