@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::{Impl, Trait};
+use crate::{Free, Impl, Trait};
 
 pub struct IntoEither<L, Tr: ?Sized>(L, Tr);
 
@@ -49,3 +49,11 @@ pub trait IntoEitherExt<L, Tr: ?Sized + Trait>: Impl<IntoEither<L, Tr>> {
 }
 
 impl<L, Tr: ?Sized + Trait, T: Impl<IntoEither<L, Tr>>> IntoEitherExt<L, Tr> for T {}
+
+impl<L, Tr: ?Sized + Free> Free for IntoEither<L, Tr> {
+    type Free = Either<L, Tr::Free>;
+
+    fn free(x: impl Impl<Self>) -> Self::Free {
+        x.into_either().map_right(Free::free)
+    }
+}
