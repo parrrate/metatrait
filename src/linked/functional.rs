@@ -1,5 +1,6 @@
 use std::{convert::Infallible, marker::PhantomData};
 
+use either::Either;
 use ghost::phantom;
 
 use super::{Impl, Trait};
@@ -16,8 +17,12 @@ pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait> {
     fn run(self, _: impl Impl<In0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
 }
 
-pub trait SelectFn<Wr: ?Sized + Wrap, In0: ?Sized + Trait, In1: ?Sized + Trait> {
+pub trait UnionFn {
     type Out: ?Sized + Trait;
+    fn union(_: Either<impl Impl<Self::Out>, impl Impl<Self::Out>>) -> impl Impl<Self::Out>;
+}
+
+pub trait SelectFn<Wr: ?Sized + Wrap, In0: ?Sized + Trait, In1: ?Sized + Trait>: UnionFn {
     fn run0(self, _: impl Impl<In0>, _: impl Impl<Wr::Wrap<In1>>) -> impl Impl<Self::Out>;
     fn run1(self, _: impl Impl<In1>, _: impl Impl<Wr::Wrap<In0>>) -> impl Impl<Self::Out>;
 }
@@ -93,7 +98,13 @@ pub trait Map2: Wrap {
     ) -> impl Impl<Self::Wrap<F::Out>>;
 }
 
-pub trait Select: Wrap {
+pub trait Union: Wrap {
+    fn union<F: UnionFn>(
+        _: Either<impl Impl<Self::Wrap<F::Out>>, impl Impl<Self::Wrap<F::Out>>>,
+    ) -> impl Impl<Self::Wrap<F::Out>>;
+}
+
+pub trait Select: Union {
     fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<Self, In0, In1>>(
         _: impl Impl<Self::Wrap<In0>>,
         _: impl Impl<Self::Wrap<In1>>,

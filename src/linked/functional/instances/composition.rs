@@ -1,9 +1,11 @@
 use std::marker::PhantomData;
 
+use either::Either;
+
 use crate::linked::{
     functional::{
         Flatten, FlattenFn, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, SelectMap, Transpose,
-        TransposeFn, Wrap,
+        TransposeFn, Union, UnionFn, Wrap,
     },
     Impl, Trait,
 };
@@ -72,14 +74,34 @@ impl<Uo: Map2, Ui: Map2> Map2 for Composition<Uo, Ui> {
     }
 }
 
-impl<Uo: Select, Ui: Map> Select for Composition<Uo, Ui> {
+impl<Uo: Union, Ui: Union> Union for Composition<Uo, Ui> {
+    fn union<F: UnionFn>(
+        x: Either<impl Impl<Self::Wrap<F::Out>>, impl Impl<Self::Wrap<F::Out>>>,
+    ) -> impl Impl<Self::Wrap<F::Out>> {
+        struct Tmp<F, Ui>(F, Ui);
+        impl<F: UnionFn, Ui: Union> UnionFn for Tmp<F, Ui> {
+            type Out = Ui::Wrap<F::Out>;
+
+            fn union(
+                x: Either<impl Impl<Self::Out>, impl Impl<Self::Out>>,
+            ) -> impl Impl<Self::Out> {
+                Ui::union::<F>(x)
+            }
+        }
+
+        Uo::union::<Tmp<F, Ui>>(x)
+    }
+}
+
+impl<Uo: Select, Ui: Map + Union> Select for Composition<Uo, Ui> {
     fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<Self, In0, In1>>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        struct Tmp<F, Ui, In0: ?Sized, In1: ?Sized>(
+        struct Tmp<F, Uo, Ui, In0: ?Sized, In1: ?Sized>(
             F,
+            PhantomData<Uo>,
             PhantomData<Ui>,
             PhantomData<In0>,
             PhantomData<In1>,
@@ -88,12 +110,26 @@ impl<Uo: Select, Ui: Map> Select for Composition<Uo, Ui> {
                 In0: ?Sized + Trait,
                 In1: ?Sized + Trait,
                 F: SelectFn<Composition<Uo, Ui>, In0, In1>,
-                Ui: Map,
                 Uo: Wrap,
-            > SelectFn<Uo, Ui::Wrap<In0>, Ui::Wrap<In1>> for Tmp<F, Ui, In0, In1>
+                Ui: Map + Union,
+            > UnionFn for Tmp<F, Uo, Ui, In0, In1>
         {
             type Out = Ui::Wrap<F::Out>;
 
+            fn union(
+                x: Either<impl Impl<Self::Out>, impl Impl<Self::Out>>,
+            ) -> impl Impl<Self::Out> {
+                Ui::union::<F>(x)
+            }
+        }
+        impl<
+                In0: ?Sized + Trait,
+                In1: ?Sized + Trait,
+                F: SelectFn<Composition<Uo, Ui>, In0, In1>,
+                Uo: Wrap,
+                Ui: Map + Union,
+            > SelectFn<Uo, Ui::Wrap<In0>, Ui::Wrap<In1>> for Tmp<F, Uo, Ui, In0, In1>
+        {
             fn run0(
                 self,
                 x: impl Impl<Ui::Wrap<In0>>,
@@ -114,7 +150,7 @@ impl<Uo: Select, Ui: Map> Select for Composition<Uo, Ui> {
         Uo::select(
             x0,
             x1,
-            Tmp::<F, Ui, In0, In1>(f, PhantomData, PhantomData, PhantomData),
+            Tmp::<F, Uo, Ui, In0, In1>(f, PhantomData, PhantomData, PhantomData, PhantomData),
         )
     }
 }
