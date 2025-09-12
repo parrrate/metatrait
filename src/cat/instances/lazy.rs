@@ -2,7 +2,10 @@ use either::Either;
 
 use crate::{
     cat::{functor::*, morphism::*},
-    traits::to::{To, ToExt},
+    traits::{
+        is::IsExt,
+        to::{To, ToExt},
+    },
     Impl, Trait,
 };
 
@@ -60,9 +63,8 @@ impl Iterate for Lazy {
         || loop {
             match f.done() {
                 Either::Left(x) => break x,
-                Either::Right(next) => f = next,
+                Either::Right(next) => f = next.to().into_that(),
             }
-            f.run().to();
         }
     }
 }

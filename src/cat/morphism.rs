@@ -4,7 +4,6 @@ use crate::{
     traits::{
         empty::Empty,
         is::{Is, IsExt},
-        unit::Unit,
     },
     Impl, Trait,
 };
@@ -44,6 +43,5 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
 }
 
 pub trait IterateFn<Wr: ?Sized + Wrap>: BaseFn {
-    fn done(self) -> Either<impl Impl<Self::Out>, Self>;
-    fn run(&mut self) -> impl Impl<Wr::Wrap<Unit>>;
+    fn done(self) -> Either<impl Impl<Self::Out>, impl Impl<Wr::Wrap<Is<Self, Empty>>>>;
 }

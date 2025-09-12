@@ -3,7 +3,10 @@ use futures::future::select;
 
 use crate::{
     cat::{functor::*, morphism::*},
-    traits::future::{ToFuture, ToFutureExt},
+    traits::{
+        future::{ToFuture, ToFutureExt},
+        is::IsExt,
+    },
     Impl, Trait,
 };
 
@@ -87,9 +90,8 @@ impl Iterate for Futures {
             loop {
                 match f.done() {
                     Either::Left(x) => break x,
-                    Either::Right(next) => f = next,
+                    Either::Right(next) => f = next.to_future().await.into_that(),
                 }
-                f.run().to_future().await;
             }
         }
     }
