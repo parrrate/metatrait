@@ -6,6 +6,7 @@ use metatrait::{
     existence::{Never, Sometimes},
 };
 
+#[expect(unused)]
 struct Phantoms;
 
 impl<T> BaseUnwrap<PhantomData<T>> for Phantoms {
