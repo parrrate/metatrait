@@ -1,3 +1,4 @@
+#[doc(no_inline)]
 pub use either::Either;
 
 pub mod base;

@@ -7,7 +7,7 @@ use crate::{Impl, Trait};
 use super::{functor::*, morphism::*};
 
 #[phantom]
-pub struct PureFn<Wr: ?Sized, Tr: ?Sized>;
+pub(crate) struct PureFn<Wr: ?Sized, Tr: ?Sized>;
 
 impl<Wr: ?Sized + Pure, Tr: ?Sized + Trait> MapFn<Tr> for PureFn<Wr, Tr> {
     type Out = Wr::Wrap<Tr>;
@@ -18,7 +18,7 @@ impl<Wr: ?Sized + Pure, Tr: ?Sized + Trait> MapFn<Tr> for PureFn<Wr, Tr> {
 }
 
 #[phantom]
-pub struct FlattenFn<Wr: ?Sized, Tr: ?Sized>;
+pub(crate) struct FlattenFn<Wr: ?Sized, Tr: ?Sized>;
 
 impl<Wr: ?Sized + Flatten, Tr: ?Sized + Trait> MapFn<Wr::Wrap<Wr::Wrap<Tr>>> for FlattenFn<Wr, Tr> {
     type Out = Wr::Wrap<Tr>;
@@ -29,7 +29,7 @@ impl<Wr: ?Sized + Flatten, Tr: ?Sized + Trait> MapFn<Wr::Wrap<Wr::Wrap<Tr>>> for
 }
 
 #[phantom]
-pub struct TransposeFn<WrO: ?Sized, WrI: ?Sized, Tr: ?Sized>;
+pub(crate) struct TransposeFn<WrO: ?Sized, WrI: ?Sized, Tr: ?Sized>;
 
 impl<WrO: ?Sized + Pure + Map, WrI: ?Sized + Transpose, Tr: ?Sized + Trait>
     MapFn<WrI::Wrap<WrO::Wrap<Tr>>> for TransposeFn<WrO, WrI, Tr>
@@ -41,7 +41,7 @@ impl<WrO: ?Sized + Pure + Map, WrI: ?Sized + Transpose, Tr: ?Sized + Trait>
     }
 }
 
-pub enum SelectMap<Wr: ?Sized, Tr: ?Sized> {
+pub(crate) enum SelectMap<Wr: ?Sized, Tr: ?Sized> {
     __Phantom(PhantomData<Wr>, PhantomData<Tr>, Infallible),
 }
 
@@ -55,7 +55,7 @@ impl<Wr: ?Sized + Wrap, Tr: ?Sized + Trait> SelectMap<Wr, Tr> {
     }
 }
 
-pub struct SelectMap01<T, F, In: ?Sized>(T, PhantomData<F>, PhantomData<In>);
+pub(crate) struct SelectMap01<T, F, In: ?Sized>(T, PhantomData<F>, PhantomData<In>);
 
 impl<T, F, In: ?Sized> SelectMap01<T, F, In> {
     pub fn new(x: T) -> Self {
@@ -73,7 +73,7 @@ impl<T: Impl<F::Tr0>, F: SelectFn<In, Tr>, Tr: ?Sized + Trait, In: ?Sized + Trai
     }
 }
 
-pub struct SelectMap10<T, F, In: ?Sized>(T, PhantomData<F>, PhantomData<In>);
+pub(crate) struct SelectMap10<T, F, In: ?Sized>(T, PhantomData<F>, PhantomData<In>);
 
 impl<T, F, In: ?Sized> SelectMap10<T, F, In> {
     pub fn new(x: T) -> Self {
@@ -91,7 +91,7 @@ impl<T: Impl<F::Tr1>, F: SelectFn<Tr, In>, Tr: ?Sized + Trait, In: ?Sized + Trai
     }
 }
 
-pub struct SelectMap0<F, T, Wr: ?Sized, Tr: ?Sized>(F, T, PhantomData<Wr>, PhantomData<Tr>);
+pub(crate) struct SelectMap0<F, T, Wr: ?Sized, Tr: ?Sized>(F, T, PhantomData<Wr>, PhantomData<Tr>);
 
 impl<
         F: SelectFn<In, Tr>,
@@ -113,7 +113,7 @@ impl<
     }
 }
 
-pub struct SelectMap1<F, T, Wr: ?Sized, Tr: ?Sized>(F, T, PhantomData<Wr>, PhantomData<Tr>);
+pub(crate) struct SelectMap1<F, T, Wr: ?Sized, Tr: ?Sized>(F, T, PhantomData<Wr>, PhantomData<Tr>);
 
 impl<
         F: SelectFn<Tr, In>,
