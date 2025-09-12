@@ -158,3 +158,5 @@ impl<Wr: ?Sized + Pure + Map + Flatten> SelectMapExt for Wr {}
 pub trait Wraps<Wr: ?Sized + Wrap, T>: Impl<Wr::Wrap<Is<T>>> {}
 
 impl<Wr: ?Sized + Wrap, T, To: Impl<Wr::Wrap<Is<T>>>> Wraps<Wr, T> for To {}
+
+pub type WrapCommon<'a, Wr, T> = <<Wr as Wrap>::Wrap<Is<T>> as Trait>::Common<'a>;
