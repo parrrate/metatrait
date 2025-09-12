@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::{Impl, Trait};
+use crate::{Free, Impl, Trait};
 
 use super::empty::Empty;
 
@@ -49,3 +49,11 @@ pub trait IsExt {
 }
 
 impl<That> IsExt for That {}
+
+impl<That> Free for Is<That> {
+    type Free = That;
+
+    fn free(x: impl Impl<Self>) -> Self::Free {
+        x.into_that()
+    }
+}
