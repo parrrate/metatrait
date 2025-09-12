@@ -58,7 +58,7 @@ impl<WrO: Map, WrI: Map> Map for Composition<WrO, WrI> {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        x.w_map(CompositionMap::<F, WrI, In>::new(f))
+        x.w_map(CompositionMap::<_, WrI, _>::new(f))
     }
 }
 
@@ -97,7 +97,7 @@ impl<WrO: Map2, WrI: Map2> Map2 for Composition<WrO, WrI> {
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        WrO::map2(x0, x1, CompositionMap2::<F, WrI, In0, In1>::new(f))
+        WrO::map2(x0, x1, CompositionMap2::<_, WrI, _, _>::new(f))
     }
 }
 
@@ -153,11 +153,11 @@ impl<
     }
 
     fn run01(x: impl Impl<Self::Tr0>, y: impl Impl<WrI::Wrap<In1>>) -> impl Impl<Self::Out> {
-        y.w_map(SelectMap01::<_, F, In0>::new(x))
+        y.w_map(SelectMap01::<_, F, _>::new(x))
     }
 
     fn run10(x: impl Impl<Self::Tr1>, y: impl Impl<WrI::Wrap<In0>>) -> impl Impl<Self::Out> {
-        y.w_map(SelectMap10::<_, F, In1>::new(x))
+        y.w_map(SelectMap10::<_, F, _>::new(x))
     }
 }
 
@@ -170,7 +170,7 @@ impl<WrO: Select, WrI: Map + ToEither + Pure> Select for Composition<WrO, WrI> {
         WrO::select(
             x0,
             x1,
-            CompositionSelect::<F, WrI, In0, In1>(f, PhantomData, PhantomData, PhantomData),
+            CompositionSelect::<_, WrI, _, _>(f, PhantomData, PhantomData, PhantomData),
         )
     }
 }
@@ -179,9 +179,9 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
     fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
-        x.w_map(TransposeFn::<WrO, WrI, WrI::Wrap<Tr>>)
+        x.w_map(TransposeFn::<WrO, WrI, _>)
             .w_flatten()
-            .w_map(FlattenFn::<WrI, Tr>)
+            .w_map(FlattenFn::<WrI, _>)
     }
 }
 
@@ -192,12 +192,10 @@ impl<WrO: ToEither + Pure, WrI: ToEither> ToEither for Composition<WrO, WrI> {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
     ) -> Either<(impl Impl<In>, Self::L), (impl Impl<Self::Wrap<Out>>, Self::R)> {
-        match WrO::either::<WrI::Wrap<In>, WrI::Wrap<Out>>(x) {
-            Either::Left((x, eo)) => match WrI::either::<In, Out>(x) {
+        match WrO::either(x) {
+            Either::Left((x, eo)) => match WrI::either(x) {
                 Either::Left((x, ei)) => Either::Left((x, (eo, ei).into())),
-                Either::Right((x, ei)) => {
-                    Either::Right((Either::Left(WrO::pure::<WrI::Wrap<Out>>(x)), ei.into2()))
-                }
+                Either::Right((x, ei)) => Either::Right((Either::Left(WrO::pure(x)), ei.into2())),
             },
             Either::Right((x, eo)) => Either::Right((Either::Right(x), eo.into2())),
         }
@@ -209,7 +207,7 @@ impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
-        WrO::transpose::<Wr, _>(x.w_map(TransposeFn::<Wr, WrI, Tr>))
+        WrO::transpose::<Wr, _>(x.w_map(TransposeFn::<Wr, WrI, _>))
     }
 }
 
