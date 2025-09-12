@@ -6,7 +6,7 @@ use crate::{
         either::IntoEitherExt,
         to::{To, ToExt},
     },
-    Impl, Trait,
+    Impl, StructuralExt, Trait,
 };
 
 pub struct Lazy;
@@ -70,6 +70,15 @@ impl Iterate for Lazy {
                 Either::Right(x) => break x,
             }
         }
+    }
+}
+
+impl Inspect for Lazy {
+    fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
+        x: impl Impl<Self::Wrap<In>>,
+        f: F,
+    ) -> impl Impl<Self::Wrap<F::Out>> {
+        || f.run(&mut x.to()).to().free()
     }
 }
 
