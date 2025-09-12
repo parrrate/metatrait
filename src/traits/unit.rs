@@ -1,6 +1,6 @@
 use either::Either;
 
-use crate::{Impl, Trait};
+use crate::{Free, Impl, Trait};
 
 impl Trait for () {
     type Assocaited = Self;
@@ -21,4 +21,10 @@ impl Impl<()> for () {
         Self: 'tmp,
     {
     }
+}
+
+impl Free for () {
+    type Free = ();
+
+    fn free(_: impl Impl<Self>) -> Self::Free {}
 }
