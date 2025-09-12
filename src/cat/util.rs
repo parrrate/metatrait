@@ -24,7 +24,7 @@ impl<Wr: ?Sized + Flatten, Tr: ?Sized + Trait> MapFn<Wr::Wrap<Wr::Wrap<Tr>>> for
     type Out = Wr::Wrap<Tr>;
 
     fn run(self, x: impl Impl<Wr::Wrap<Wr::Wrap<Tr>>>) -> impl Impl<Self::Out> {
-        Wr::flatten(x)
+        x.w_flatten()
     }
 }
 
@@ -141,7 +141,7 @@ pub trait SelectMapExt: Pure + Map + Flatten {
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        Self::flatten(x0.w_map(SelectMap::<Self, In1>::run0(x1, f)))
+        x0.w_map(SelectMap::<Self, In1>::run0(x1, f)).w_flatten()
     }
 
     fn select_1<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
@@ -149,7 +149,7 @@ pub trait SelectMapExt: Pure + Map + Flatten {
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        Self::flatten(x1.w_map(SelectMap::<Self, In0>::run1(x0, f)))
+        x1.w_map(SelectMap::<Self, In0>::run1(x0, f)).w_flatten()
     }
 }
 

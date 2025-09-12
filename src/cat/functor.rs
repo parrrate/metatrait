@@ -92,7 +92,29 @@ pub trait WrappedMapExt<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrappe
     }
 }
 
-impl<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>, TrO: ?Sized + Impl<Tr>>
-    WrappedMapExt<Wr, Tr> for TrO
+impl<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>, T: ?Sized + Impl<Tr>>
+    WrappedMapExt<Wr, Tr> for T
+{
+}
+
+pub trait WrappedFlattenExt<
+    Wr: ?Sized + Flatten<Wrap<TrI> = TrO> + Flatten<Wrap<Tr> = TrI>,
+    TrO: ?Sized + Wrapped<Wr, Tr = TrI>,
+    TrI: ?Sized + Wrapped<Wr, Tr = Tr>,
+    Tr: ?Sized + Trait,
+>: Impl<TrO>
+{
+    fn w_flatten(self) -> impl Impl<TrI> {
+        Wr::flatten::<Tr>(self)
+    }
+}
+
+impl<
+        Wr: ?Sized + Flatten<Wrap<TrI> = TrO> + Flatten<Wrap<Tr> = TrI>,
+        TrO: ?Sized + Wrapped<Wr, Tr = TrI>,
+        TrI: ?Sized + Wrapped<Wr, Tr = Tr>,
+        Tr: ?Sized + Trait,
+        T: Impl<TrO>,
+    > WrappedFlattenExt<Wr, TrO, TrI, Tr> for T
 {
 }
