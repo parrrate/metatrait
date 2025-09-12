@@ -63,7 +63,7 @@ impl Flatten for Verbatim {
 impl Iterate for Verbatim {
     fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
         loop {
-            match f.done() {
+            match f.run() {
                 Either::Left(x) => break x,
                 Either::Right(next) => f = next.into_that(),
             }

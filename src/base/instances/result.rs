@@ -3,7 +3,10 @@ use std::convert::identity;
 use either::Either;
 use ghost::phantom;
 
-use crate::{base::functor::*, existence::Sometimes};
+use crate::{
+    base::{functor::*, morphism::*},
+    existence::Sometimes,
+};
 
 #[phantom]
 pub struct Results<E>;
@@ -54,6 +57,17 @@ impl<E> BaseSelect for Results<E> {
 impl<E> BaseFlatten for Results<E> {
     fn flatten<T>(x: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T> {
         x.and_then(identity)
+    }
+}
+
+impl<E> BaseIterate for Results<E> {
+    fn iterate<F: BaseIterateFn<Self>>(mut f: F) -> Self::Wrap<F::Out> {
+        loop {
+            match f.run() {
+                Either::Left(x) => break Ok(x),
+                Either::Right(next) => f = next?,
+            }
+        }
     }
 }
 

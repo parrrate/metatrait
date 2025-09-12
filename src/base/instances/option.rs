@@ -1,6 +1,9 @@
 use either::Either;
 
-use crate::{base::functor::*, existence::Sometimes};
+use crate::{
+    base::{functor::*, morphism::*},
+    existence::Sometimes,
+};
 
 pub struct Options;
 
@@ -50,6 +53,17 @@ impl BaseSelect for Options {
 impl BaseFlatten for Options {
     fn flatten<T>(x: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T> {
         x.flatten()
+    }
+}
+
+impl BaseIterate for Options {
+    fn iterate<F: BaseIterateFn<Self>>(mut f: F) -> Self::Wrap<F::Out> {
+        loop {
+            match f.run() {
+                Either::Left(x) => break Some(x),
+                Either::Right(next) => f = next?,
+            }
+        }
     }
 }
 

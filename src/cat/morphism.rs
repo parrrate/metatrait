@@ -25,11 +25,11 @@ pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait> {
     fn run(self, _: impl Impl<In0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
 }
 
-pub trait BaseFn: Sized {
+pub trait TraitFn: Sized {
     type Out: ?Sized + Trait;
 }
 
-pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
+pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: TraitFn {
     type Tr0: ?Sized + Trait;
     type Tr1: ?Sized + Trait;
 
@@ -39,6 +39,6 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
     fn run10(_: impl Impl<Self::Tr1>, _: impl Impl<In0>) -> impl Impl<Self::Out>;
 }
 
-pub trait IterateFn<Wr: ?Sized + Wrap>: BaseFn {
-    fn done(self) -> Either<impl Impl<Self::Out>, impl Wraps<Wr, Self>>;
+pub trait IterateFn<Wr: ?Sized + Wrap>: TraitFn {
+    fn run(self) -> Either<impl Impl<Self::Out>, impl Wraps<Wr, Self>>;
 }

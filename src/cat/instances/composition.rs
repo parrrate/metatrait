@@ -108,7 +108,7 @@ struct CompositionSelect<F, WrI, In0: ?Sized, In1: ?Sized>(
     PhantomData<In1>,
 );
 
-impl<F: SelectFn<In0, In1>, WrI: Map, In0: ?Sized + Trait, In1: ?Sized + Trait> BaseFn
+impl<F: SelectFn<In0, In1>, WrI: Map, In0: ?Sized + Trait, In1: ?Sized + Trait> TraitFn
     for CompositionSelect<F, WrI, In0, In1>
 {
     type Out = WrI::Wrap<F::Out>;
