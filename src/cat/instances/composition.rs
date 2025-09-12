@@ -209,8 +209,6 @@ impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
 
 #[cfg(all(test, feature = "futures"))]
 mod test {
-    use std::convert::identity;
-
     use crate::{
         cat::{
             instances::{futures::Futures, lazy::Lazy},
@@ -221,20 +219,21 @@ mod test {
 
     use super::*;
 
-    fn a_five<Wr: Map + Pure>() -> impl Wraps<Wr, i32> {
+    fn wrap_five<Wr: Map + Pure>() -> impl Wraps<Wr, i32> {
         let x = Wr::pure(0);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);
-        x.w_map(identity)
+        #[allow(clippy::let_and_return)]
+        x
     }
 
     #[test]
     fn test() {
         type Wr = Composition<Futures, Lazy>;
-        let x = a_five::<Wr>();
+        let x = wrap_five::<Wr>();
         let x = x.to_future();
         let x = futures::executor::block_on(x);
         let x = x.to();
