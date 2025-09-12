@@ -93,18 +93,20 @@ impl<Wr: ?Sized + Flatten, Tr: ?Sized + Trait> MapFn<Wr::Wrap<Wr::Wrap<Tr>>> for
     }
 }
 
-pub trait Transpose: Wrap {
+pub trait ToEither: Wrap {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<In>>,
     ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>>;
+}
 
+pub trait Transpose: Wrap {
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         _: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>>;
 }
 
 #[phantom]
-pub struct TransposeFn<Uo: ?Sized, Ui: ?Sized, Tr: ?Sized>;
+pub struct TransposeFn<WrO: ?Sized, WrI: ?Sized, Tr: ?Sized>;
 
 impl<WrO: ?Sized + Pure + Map, WrI: ?Sized + Transpose, Tr: ?Sized + Trait>
     MapFn<WrI::Wrap<WrO::Wrap<Tr>>> for TransposeFn<WrO, WrI, Tr>

@@ -1,7 +1,9 @@
 use either::Either;
 
 use crate::{
-    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Transpose, Wrap},
+    functional::{
+        Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, ToEither, Transpose, Wrap,
+    },
     Impl, Sample, Trait,
 };
 
@@ -54,13 +56,15 @@ impl Flatten for Verbatim {
     }
 }
 
-impl Transpose for Verbatim {
+impl ToEither for Verbatim {
     fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
     ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>> {
         Either::<_, Sample<Self::Wrap<Out>>>::Left(x)
     }
+}
 
+impl Transpose for Verbatim {
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
