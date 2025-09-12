@@ -24,13 +24,11 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     where
         Self: 'a;
 
-    fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
-        async {
-            Trait::union(match x {
-                Either::Left(x) => Either::Left(x.to_future().await),
-                Either::Right(x) => Either::Right(x.to_future().await),
-            })
-        }
+    async fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self::Assocaited> {
+        Trait::union(match x {
+            Either::Left(x) => Either::Left(x.to_future().await),
+            Either::Right(x) => Either::Right(x.to_future().await),
+        })
     }
 
     fn common<'a>(x: impl 'a + Impl<Self>) -> Self::Common<'a>

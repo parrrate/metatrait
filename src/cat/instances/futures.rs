@@ -21,92 +21,86 @@ impl Wrap for Futures {
 }
 
 impl Pure for Futures {
-    fn pure<Tr: ?Sized + Trait>(x: impl Impl<Tr>) -> impl Impl<Self::Wrap<Tr>> {
-        async { x }
+    async fn pure<Tr: ?Sized + Trait>(x: impl Impl<Tr>) -> impl Impl<Tr> {
+        x
     }
 }
 
 impl Map for Futures {
-    fn map<F: MapFn<In>, In: ?Sized + Trait>(
+    async fn map<F: MapFn<In>, In: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        async { f.run(x.to_future().await) }
+    ) -> impl Impl<F::Out> {
+        f.run(x.to_future().await)
     }
 }
 
 impl Map2 for Futures {
-    fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
+    async fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        async {
-            let (x0, x1) = futures::join!(x0.to_future(), x1.to_future());
-            f.run(x0, x1)
-        }
+    ) -> impl Impl<F::Out> {
+        let (x0, x1) = futures::join!(x0.to_future(), x1.to_future());
+        f.run(x0, x1)
     }
 }
 
 impl Select for Futures {
-    fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
+    async fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        async {
-            Trait::union(
-                match select(
-                    std::pin::pin!(x0.to_future()),
-                    std::pin::pin!(x1.to_future()),
-                )
-                .await
-                {
-                    futures::future::Either::Left((x, y)) => {
-                        Either::Left(Trait::union(match f.run0(x) {
-                            Either::Left(x) => Either::Left(x),
-                            Either::Right(x) => Either::Right(F::run01(x, y.await)),
-                        }))
-                    }
-                    futures::future::Either::Right((x, y)) => {
-                        Either::Right(Trait::union(match f.run1(x) {
-                            Either::Left(x) => Either::Left(x),
-                            Either::Right(x) => Either::Right(F::run10(x, y.await)),
-                        }))
-                    }
-                },
+    ) -> impl Impl<F::Out> {
+        Trait::union(
+            match select(
+                std::pin::pin!(x0.to_future()),
+                std::pin::pin!(x1.to_future()),
             )
-        }
+            .await
+            {
+                futures::future::Either::Left((x, y)) => {
+                    Either::Left(Trait::union(match f.run0(x) {
+                        Either::Left(x) => Either::Left(x),
+                        Either::Right(x) => Either::Right(F::run01(x, y.await)),
+                    }))
+                }
+                futures::future::Either::Right((x, y)) => {
+                    Either::Right(Trait::union(match f.run1(x) {
+                        Either::Left(x) => Either::Left(x),
+                        Either::Right(x) => Either::Right(F::run10(x, y.await)),
+                    }))
+                }
+            },
+        )
     }
 }
 
 impl Flatten for Futures {
-    fn flatten<Tr: ?Sized + Trait>(
+    async fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
-    ) -> impl Impl<Self::Wrap<Tr>> {
-        async { x.to_future().await.to_future().await }
+    ) -> impl Impl<Tr> {
+        x.to_future().await.to_future().await
     }
 }
 
 impl Iterate for Futures {
-    fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
-        async {
-            loop {
-                match f.run().to_future().await.into_either() {
-                    Either::Left(next) => f = next,
-                    Either::Right(x) => break x,
-                }
+    async fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<F::Out> {
+        loop {
+            match f.run().to_future().await.into_either() {
+                Either::Left(next) => f = next,
+                Either::Right(x) => break x,
             }
         }
     }
 }
 
 impl Inspect for Futures {
-    fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
+    async fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
-    ) -> impl Impl<Self::Wrap<F::Out>> {
-        async { f.run(&mut x.to_future().await).to_future().await.free() }
+    ) -> impl Impl<F::Out> {
+        f.run(&mut x.to_future().await).to_future().await.free()
     }
 }
 

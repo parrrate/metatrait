@@ -1,3 +1,4 @@
+#![allow(refining_impl_trait)]
 #![allow(clippy::type_complexity)]
 
 #[doc(no_inline)]
