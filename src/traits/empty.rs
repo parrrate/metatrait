@@ -1,4 +1,4 @@
-use crate::{Impl, Trait};
+use crate::{Free, Impl, Trait};
 
 pub enum Empty {}
 
@@ -22,4 +22,10 @@ impl<I> Impl<Empty> for I {
     {
         empty
     }
+}
+
+impl Free for Empty {
+    type Free = ();
+
+    fn free(_: impl Impl<Self>) -> Self::Free {}
 }
