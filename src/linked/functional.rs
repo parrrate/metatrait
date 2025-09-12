@@ -172,9 +172,9 @@ pub trait Functor: Map {}
 
 impl<Wr: ?Sized + Map> Functor for Wr {}
 
-pub trait Applicative: Functor + Map2 + Pure + Select {}
+pub trait Applicative: Functor + Map2 + Pure {}
 
-impl<Wr: ?Sized + Functor + Map2 + Pure + Select> Applicative for Wr {}
+impl<Wr: ?Sized + Functor + Map2 + Pure> Applicative for Wr {}
 
 pub trait Monad: Applicative + Flatten {}
 
