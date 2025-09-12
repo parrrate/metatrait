@@ -16,10 +16,10 @@ pub struct Composition<WrO, WrI>(WrO, WrI);
 impl<
         WrO: Wrap<Wrap<Ti> = To>,
         WrI: Wrap<Wrap<T> = Ti>,
-        To: ?Sized + Unwrap<WrO, Tr = Ti>,
-        Ti: ?Sized + Unwrap<WrI, Tr = T>,
+        To: ?Sized + Wrapped<WrO, Tr = Ti>,
+        Ti: ?Sized + Wrapped<WrI, Tr = T>,
         T: ?Sized + Trait,
-    > Unwrap<Composition<WrO, WrI>> for To
+    > Unwrap<To> for Composition<WrO, WrI>
 {
     type Tr = T;
 }

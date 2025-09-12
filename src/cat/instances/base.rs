@@ -9,7 +9,7 @@ use crate::{
 
 pub struct BaseInstance<WrB: ?Sized>(WrB);
 
-impl<WrB: ?Sized + BaseMap, Tr: ?Sized + Trait> Unwrap<BaseInstance<WrB>> for Base<WrB, Tr> {
+impl<WrB: ?Sized + BaseMap, Tr: ?Sized + Trait> Unwrap<Base<WrB, Tr>> for BaseInstance<WrB> {
     type Tr = Tr;
 }
 
