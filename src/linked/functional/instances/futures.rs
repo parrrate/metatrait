@@ -7,7 +7,7 @@ use crate::linked::{
     Impl, Trait,
 };
 
-struct Futures;
+pub struct Futures;
 
 impl Wrap for Futures {
     type Wrap<Tr: ?Sized + Trait> = ToFuture<Tr>;
@@ -78,5 +78,29 @@ impl Flatten for Futures {
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
         async { x.to_future().await.to_future().await }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::linked::traits::{
+        empty::Empty,
+        is::{Is, IsExt},
+    };
+
+    use super::*;
+
+    #[test]
+    fn test() {
+        let x = Futures::pure::<Is<_, Empty>>(0);
+        let x = Futures::map(x, |x| x + 1);
+        let x = Futures::map(x, |x| x + 1);
+        let x = Futures::map(x, |x| x + 1);
+        let x = Futures::map(x, |x| x + 1);
+        let x = Futures::map(x, |x| x + 1);
+        let x = x.to_future();
+        let x = futures::executor::block_on(x);
+        let x = x.into_that();
+        assert_eq!(x, 5);
     }
 }

@@ -52,3 +52,26 @@ impl Flatten for Lazy {
         || x.to().to()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::linked::traits::{
+        empty::Empty,
+        is::{Is, IsExt},
+    };
+
+    use super::*;
+
+    #[test]
+    fn test() {
+        let x = Lazy::pure::<Is<_, Empty>>(0);
+        let x = Lazy::map(x, |x| x + 1);
+        let x = Lazy::map(x, |x| x + 1);
+        let x = Lazy::map(x, |x| x + 1);
+        let x = Lazy::map(x, |x| x + 1);
+        let x = Lazy::map(x, |x| x + 1);
+        let x = x.to();
+        let x = x.into_that();
+        assert_eq!(x, 5);
+    }
+}

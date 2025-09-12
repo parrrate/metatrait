@@ -3,13 +3,27 @@ use std::{convert::Infallible, marker::PhantomData};
 use either::Either;
 use ghost::phantom;
 
-use super::{Impl, Trait};
+use super::{
+    traits::{
+        empty::Empty,
+        is::{Is, IsExt},
+    },
+    Impl, Trait,
+};
 
 pub mod instances;
 
 pub trait MapFn<In: ?Sized + Trait> {
     type Out: ?Sized + Trait;
     fn run(self, _: impl Impl<In>) -> impl Impl<Self::Out>;
+}
+
+impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In, Empty>> for F {
+    type Out = Is<Out, Empty>;
+
+    fn run(self, x: impl Impl<Is<In, Empty>>) -> impl Impl<Self::Out> {
+        self(x.into_that())
+    }
 }
 
 pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait> {
