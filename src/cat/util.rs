@@ -1,86 +1,10 @@
 use std::{convert::Infallible, marker::PhantomData};
 
-use either::Either;
 use ghost::phantom;
 
-use super::{
-    traits::{
-        empty::Empty,
-        is::{Is, IsExt},
-    },
-    Impl, Trait,
-};
+use crate::{Impl, Trait};
 
-pub mod instances;
-
-pub trait MapFn<In: ?Sized + Trait> {
-    type Out: ?Sized + Trait;
-    fn run(self, _: impl Impl<In>) -> impl Impl<Self::Out>;
-}
-
-impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In, Empty>> for F {
-    type Out = Is<Out, Empty>;
-
-    fn run(self, x: impl Impl<Is<In, Empty>>) -> impl Impl<Self::Out> {
-        self(x.into_that())
-    }
-}
-
-pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait> {
-    type Out: ?Sized + Trait;
-    fn run(self, _: impl Impl<In0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
-}
-
-pub trait BaseFn {
-    type Out: ?Sized + Trait;
-}
-
-pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
-    type Tr0: ?Sized + Trait;
-    type Tr1: ?Sized + Trait;
-
-    fn run0(self, _: impl Impl<In0>) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr0>>;
-    fn run1(self, _: impl Impl<In1>) -> Either<impl Impl<Self::Out>, impl Impl<Self::Tr1>>;
-    fn run01(_: impl Impl<Self::Tr0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
-    fn run10(_: impl Impl<Self::Tr1>, _: impl Impl<In0>) -> impl Impl<Self::Out>;
-}
-
-pub trait Wrap {
-    type Wrap<Tr: ?Sized + Trait>: ?Sized + Trait;
-}
-
-pub trait Pure: Wrap {
-    fn pure<Tr: ?Sized + Trait>(_: impl Impl<Tr>) -> impl Impl<Self::Wrap<Tr>>;
-}
-
-pub trait Map: Wrap {
-    fn map<F: MapFn<In>, In: ?Sized + Trait>(
-        _: impl Impl<Self::Wrap<In>>,
-        _: F,
-    ) -> impl Impl<Self::Wrap<F::Out>>;
-}
-
-pub trait Map2: Wrap {
-    fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
-        _: impl Impl<Self::Wrap<In0>>,
-        _: impl Impl<Self::Wrap<In1>>,
-        _: F,
-    ) -> impl Impl<Self::Wrap<F::Out>>;
-}
-
-pub trait Select: Wrap {
-    fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
-        _: impl Impl<Self::Wrap<In0>>,
-        _: impl Impl<Self::Wrap<In1>>,
-        _: F,
-    ) -> impl Impl<Self::Wrap<F::Out>>;
-}
-
-pub trait Flatten: Wrap {
-    fn flatten<Tr: ?Sized + Trait>(
-        _: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
-    ) -> impl Impl<Self::Wrap<Tr>>;
-}
+use super::{functor::*, morphism::*};
 
 #[phantom]
 pub struct FlattenFn<Wr: ?Sized, Tr: ?Sized>;
@@ -91,18 +15,6 @@ impl<Wr: ?Sized + Flatten, Tr: ?Sized + Trait> MapFn<Wr::Wrap<Wr::Wrap<Tr>>> for
     fn run(self, x: impl Impl<Wr::Wrap<Wr::Wrap<Tr>>>) -> impl Impl<Self::Out> {
         Wr::flatten(x)
     }
-}
-
-pub trait ToEither: Wrap {
-    fn either<In: ?Sized + Trait, Out: ?Sized + Trait>(
-        _: impl Impl<Self::Wrap<In>>,
-    ) -> Either<impl Impl<In>, impl Impl<Self::Wrap<Out>>>;
-}
-
-pub trait Transpose: Wrap {
-    fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
-        _: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
-    ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>>;
 }
 
 #[phantom]
@@ -117,18 +29,6 @@ impl<WrO: ?Sized + Pure + Map, WrI: ?Sized + Transpose, Tr: ?Sized + Trait>
         WrI::transpose::<WrO, Tr>(x)
     }
 }
-
-pub trait Functor: Map {}
-
-impl<Wr: ?Sized + Map> Functor for Wr {}
-
-pub trait Applicative: Functor + Map2 + Pure {}
-
-impl<Wr: ?Sized + Functor + Map2 + Pure> Applicative for Wr {}
-
-pub trait Monad: Applicative + Flatten {}
-
-impl<Wr: ?Sized + Applicative + Flatten> Monad for Wr {}
 
 pub enum SelectMap<Wr: ?Sized, Tr: ?Sized> {
     __Phantom(PhantomData<Wr>, PhantomData<Tr>, Infallible),

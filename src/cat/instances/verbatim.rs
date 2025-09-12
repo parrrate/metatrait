@@ -1,9 +1,7 @@
 use either::Either;
 
 use crate::{
-    functional::{
-        Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, ToEither, Transpose, Wrap,
-    },
+    cat::{functor::*, morphism::*},
     Impl, Sample, Trait,
 };
 
