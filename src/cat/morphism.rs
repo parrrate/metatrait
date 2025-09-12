@@ -5,7 +5,7 @@ use crate::{
     Impl, Trait,
 };
 
-use super::functor::Wrap;
+use super::{functor::Wrap, util::Wraps};
 
 pub trait MapFn<In: ?Sized + Trait> {
     type Out: ?Sized + Trait;
@@ -40,5 +40,5 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: BaseFn {
 }
 
 pub trait IterateFn<Wr: ?Sized + Wrap>: BaseFn {
-    fn done(self) -> Either<impl Impl<Self::Out>, impl Impl<Wr::Wrap<Is<Self>>>>;
+    fn done(self) -> Either<impl Impl<Self::Out>, impl Wraps<Wr, Self>>;
 }

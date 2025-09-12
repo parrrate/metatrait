@@ -212,17 +212,16 @@ mod test {
     use std::convert::identity;
 
     use crate::{
-        cat::instances::{futures::Futures, lazy::Lazy},
-        traits::{
-            future::ToFutureExt,
-            is::{Is, IsExt},
-            to::ToExt,
+        cat::{
+            instances::{futures::Futures, lazy::Lazy},
+            util::Wraps,
         },
+        traits::{future::ToFutureExt, is::IsExt, to::ToExt},
     };
 
     use super::*;
 
-    fn a_five<Wr: Map + Pure>() -> impl Impl<Wr::Wrap<Is<i32>>> {
+    fn a_five<Wr: Map + Pure>() -> impl Wraps<Wr, i32> {
         let x = Wr::pure(0);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);
