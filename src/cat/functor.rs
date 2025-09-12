@@ -74,6 +74,13 @@ pub trait Transpose: Wrap {
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>>;
 }
 
+pub trait Inspect: Wrap {
+    fn inspect<F: InspectFn<In, Self>, In: ?Sized + Trait>(
+        _: impl Impl<Self::Wrap<In>>,
+        _: F,
+    ) -> impl Impl<Self::Wrap<F::Out>>;
+}
+
 pub trait Functor: Map {}
 
 impl<Wr: ?Sized + Map> Functor for Wr {}
