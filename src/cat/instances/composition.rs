@@ -209,6 +209,8 @@ impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
 
 #[cfg(all(test, feature = "futures"))]
 mod test {
+    use std::convert::identity;
+
     use crate::{
         cat::instances::{futures::Futures, lazy::Lazy},
         traits::{
@@ -220,15 +222,20 @@ mod test {
 
     use super::*;
 
+    fn a_five<Wr: Map + Pure>() -> impl Impl<Wr::Wrap<Is<i32>>> {
+        let x = Wr::pure::<Is<_>>(0);
+        let x = x.w_map(|x| x + 1);
+        let x = x.w_map(|x| x + 1);
+        let x = x.w_map(|x| x + 1);
+        let x = x.w_map(|x| x + 1);
+        let x = x.w_map(|x| x + 1);
+        x.w_map(identity)
+    }
+
     #[test]
     fn test() {
         type Wr = Composition<Futures, Lazy>;
-        let x = Wr::pure::<Is<_>>(0);
-        let x = Wr::map(x, |x| x + 1);
-        let x = Wr::map(x, |x| x + 1);
-        let x = Wr::map(x, |x| x + 1);
-        let x = Wr::map(x, |x| x + 1);
-        let x = Wr::map(x, |x| x + 1);
+        let x = a_five::<Wr>();
         let x = x.to_future();
         let x = futures::executor::block_on(x);
         let x = x.to();
