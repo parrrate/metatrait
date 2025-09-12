@@ -7,6 +7,17 @@ use crate::{Impl, Trait};
 use super::{functor::*, morphism::*};
 
 #[phantom]
+pub struct PureFn<Wr: ?Sized, Tr: ?Sized>;
+
+impl<Wr: ?Sized + Pure, Tr: ?Sized + Trait> MapFn<Tr> for PureFn<Wr, Tr> {
+    type Out = Wr::Wrap<Tr>;
+
+    fn run(self, x: impl Impl<Tr>) -> impl Impl<Self::Out> {
+        Wr::pure(x)
+    }
+}
+
+#[phantom]
 pub struct FlattenFn<Wr: ?Sized, Tr: ?Sized>;
 
 impl<Wr: ?Sized + Flatten, Tr: ?Sized + Trait> MapFn<Wr::Wrap<Wr::Wrap<Tr>>> for FlattenFn<Wr, Tr> {
