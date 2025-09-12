@@ -1,3 +1,5 @@
+use either::Either;
+
 use crate::{
     cat::{functor::*, morphism::*},
     traits::to::{To, ToExt},
@@ -50,6 +52,18 @@ impl Flatten for Lazy {
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
         || x.to().to()
+    }
+}
+
+impl Iterate for Lazy {
+    fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
+        || loop {
+            match f.done() {
+                Either::Left(x) => break x,
+                Either::Right(next) => f = next,
+            }
+            f.run().to();
+        }
     }
 }
 
