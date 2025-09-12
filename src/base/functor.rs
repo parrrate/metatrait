@@ -1,7 +1,14 @@
 use either::Either;
 
+pub trait BaseUnwrap<Wr: ?Sized + BaseWrap>: Sized
+where
+    Wr: BaseWrap<Wrap<Self::T> = Self>,
+{
+    type T;
+}
+
 pub trait BaseWrap {
-    type Wrap<T>;
+    type Wrap<T>: BaseUnwrap<Self, T = T>;
 }
 
 pub trait BasePure: BaseWrap {

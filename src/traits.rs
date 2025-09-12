@@ -1,3 +1,4 @@
+pub mod base;
 pub mod empty;
 #[cfg(feature = "futures")]
 pub mod future;
