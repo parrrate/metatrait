@@ -8,7 +8,7 @@ use crate::{
     Impl, Trait,
 };
 
-use super::functor::Wrap;
+use super::functor::*;
 
 pub trait MapFn<In: ?Sized + Trait> {
     type Out: ?Sized + Trait;
@@ -45,3 +45,11 @@ pub trait SelectFn<In0: ?Sized + Trait, In1: ?Sized + Trait>: TraitFn {
 pub trait IterateFn<Wr: ?Sized + Wrap>: TraitFn {
     fn run(self) -> impl Impl<Wr::Wrap<IntoEither<Self, Self::Out>>>;
 }
+
+pub trait IterateFnExt<Wr: ?Sized + Iterate>: IterateFn<Wr> {
+    fn run_iterate(self) -> impl Impl<Wr::Wrap<Self::Out>> {
+        Wr::iterate(self)
+    }
+}
+
+impl<Wr: ?Sized + Iterate, F: IterateFn<Wr>> IterateFnExt<Wr> for F {}
