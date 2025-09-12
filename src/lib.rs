@@ -10,8 +10,14 @@ pub trait Trait {
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>>;
     type Out<'out, Imp: Impl<Self>>;
     type Sample: Impl<Self>;
+    type Common<'a>: 'a + Impl<Self>
+    where
+        Self: 'a;
 
     fn union(_: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self>;
+    fn common<'a>(_: impl 'a + Impl<Self>) -> Self::Common<'a>
+    where
+        Self: 'a;
 }
 
 pub trait Impl<Tr: ?Sized + Trait>: Sized {
@@ -22,3 +28,4 @@ pub trait Impl<Tr: ?Sized + Trait>: Sized {
 }
 
 pub type Sample<Tr> = <Tr as Trait>::Sample;
+pub type Common<'a, Tr> = <Tr as Trait>::Common<'a>;

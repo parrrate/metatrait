@@ -19,6 +19,7 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
         (Pin<&'tmp mut Imp>, &'tmp mut Context<'out>);
     type Out<'out, Imp: Impl<Self>> = Poll<Imp::Associated>;
     type Sample = Pending<Tr::Sample>;
+    type Common<'a> = Pin<Box<dyn 'a + Future<Output = Tr::Common<'a>>>> where Self: 'a;
 
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
         async {
@@ -27,6 +28,13 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
                 Either::Right(x) => Either::Right(x.to_future().await),
             })
         }
+    }
+
+    fn common<'a>(x: impl 'a + Impl<Self>) -> Self::Common<'a>
+    where
+        Self: 'a,
+    {
+        Box::pin(async { Trait::common(x.to_future().await) })
     }
 }
 

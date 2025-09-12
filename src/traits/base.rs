@@ -11,6 +11,7 @@ impl<Wr: ?Sized + BaseMap, Tr: ?Sized + Trait> Trait for Base<Wr, Tr> {
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + crate::Impl<Self>> = Imp;
     type Out<'out, Imp: crate::Impl<Self>> = Wr::Wrap<Imp::Associated>;
     type Sample = Wr::Wrap<Tr::Sample>;
+    type Common<'a> = Wr::Wrap<Tr::Common<'a>> where Self: 'a;
 
     fn union(x: Either<impl crate::Impl<Self>, impl crate::Impl<Self>>) -> impl crate::Impl<Self> {
         match x {
@@ -18,6 +19,13 @@ impl<Wr: ?Sized + BaseMap, Tr: ?Sized + Trait> Trait for Base<Wr, Tr> {
             Either::Right(x) => x.into_base().b_map(Either::Right),
         }
         .b_map(Trait::union)
+    }
+
+    fn common<'a>(x: impl 'a + Impl<Self>) -> Self::Common<'a>
+    where
+        Self: 'a,
+    {
+        x.into_base().b_map(Trait::common)
     }
 }
 
