@@ -2,10 +2,12 @@ use either::Either;
 
 use crate::{Impl, Trait};
 
-pub struct Is<That, Tr: ?Sized>(That, Tr);
+use super::empty::Empty;
 
-impl<That: Impl<Tr>, Tr: ?Sized + Trait> Trait for Is<That, Tr> {
-    type Assocaited = Tr;
+pub struct Is<That>(That);
+
+impl<That> Trait for Is<That> {
+    type Assocaited = Empty;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = That;
     type Sample = That;
@@ -18,7 +20,7 @@ impl<That: Impl<Tr>, Tr: ?Sized + Trait> Trait for Is<That, Tr> {
     }
 }
 
-impl<That: Impl<Tr>, Tr: ?Sized + Trait> Impl<Is<Self, Tr>> for That {
+impl<That> Impl<Is<Self>> for That {
     type Associated = Self;
 
     fn method<'out: 'tmp, 'tmp>(this: Self) -> Self
@@ -29,14 +31,13 @@ impl<That: Impl<Tr>, Tr: ?Sized + Trait> Impl<Is<Self, Tr>> for That {
     }
 }
 
-pub trait IsExt<Tr: ?Sized + Trait> {
+pub trait IsExt {
     fn into_that<That>(self) -> That
     where
-        That: Impl<Tr>,
-        Self: Impl<Is<That, Tr>>,
+        Self: Impl<Is<That>>,
     {
         Self::method(self)
     }
 }
 
-impl<That, Tr: ?Sized + Trait> IsExt<Tr> for That {}
+impl<That> IsExt for That {}
