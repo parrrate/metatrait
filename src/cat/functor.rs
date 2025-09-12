@@ -83,3 +83,18 @@ impl<Wr: ?Sized + Functor + Map2 + Pure> Applicative for Wr {}
 pub trait Monad: Applicative + Flatten {}
 
 impl<Wr: ?Sized + Applicative + Flatten> Monad for Wr {}
+
+pub trait WrappedMapExt<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>>:
+    Impl<Tr>
+{
+    fn w_map<F: MapFn<Tr::Tr>>(self, f: F) -> impl Impl<Wr::Wrap<F::Out>> {
+        Wr::map(self, f)
+    }
+}
+
+impl<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>, TrO: ?Sized + Impl<Tr>>
+    WrappedMapExt<Wr, Tr> for TrO
+{
+}
+
+// fn funny_map<Wr: ?Sized + Map, Tr: ?, F: MapFn

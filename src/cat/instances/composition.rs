@@ -48,7 +48,7 @@ impl<F: MapFn<In>, Wr: ?Sized + Map, In: ?Sized + Trait> MapFn<Wr::Wrap<In>>
     type Out = Wr::Wrap<F::Out>;
 
     fn run(self, x: impl Impl<Wr::Wrap<In>>) -> impl Impl<Self::Out> {
-        Wr::map(x, self.0)
+        x.w_map(self.0)
     }
 }
 
@@ -57,7 +57,7 @@ impl<WrO: Map, WrI: Map> Map for Composition<WrO, WrI> {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
-        WrO::map(x, CompositionMap::<F, WrI, In>::new(f))
+        x.w_map(CompositionMap::<F, WrI, In>::new(f))
     }
 }
 
@@ -152,11 +152,11 @@ impl<
     }
 
     fn run01(x: impl Impl<Self::Tr0>, y: impl Impl<WrI::Wrap<In1>>) -> impl Impl<Self::Out> {
-        WrI::map(y, SelectMap01::<_, F, In0>::new(x))
+        y.w_map(SelectMap01::<_, F, In0>::new(x))
     }
 
     fn run10(x: impl Impl<Self::Tr1>, y: impl Impl<WrI::Wrap<In0>>) -> impl Impl<Self::Out> {
-        WrI::map(y, SelectMap10::<_, F, In1>::new(x))
+        y.w_map(SelectMap10::<_, F, In1>::new(x))
     }
 }
 
@@ -178,10 +178,7 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
     fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Impl<Self::Wrap<Tr>> {
-        WrO::map(
-            WrO::flatten(WrO::map(x, TransposeFn::<WrO, WrI, WrI::Wrap<Tr>>)),
-            FlattenFn::<WrI, Tr>,
-        )
+        WrO::flatten(x.w_map(TransposeFn::<WrO, WrI, WrI::Wrap<Tr>>)).w_map(FlattenFn::<WrI, Tr>)
     }
 }
 
@@ -204,7 +201,7 @@ impl<WrO: Transpose + Map, WrI: Transpose> Transpose for Composition<WrO, WrI> {
     fn transpose<Wr: ?Sized + Pure + Map, Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Wr::Wrap<Tr>>>,
     ) -> impl Impl<Wr::Wrap<Self::Wrap<Tr>>> {
-        WrO::transpose::<Wr, _>(WrO::map(x, TransposeFn::<Wr, WrI, Tr>))
+        WrO::transpose::<Wr, _>(x.w_map(TransposeFn::<Wr, WrI, Tr>))
     }
 }
 

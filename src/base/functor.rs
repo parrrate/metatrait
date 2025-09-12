@@ -67,10 +67,7 @@ pub trait BaseWrappedMapExt<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>>: BaseUnw
     }
 }
 
-impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, Wrapped: BaseUnwrap<Wr>> BaseWrappedMapExt<Wr>
-    for Wrapped
-{
-}
+impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, To: BaseUnwrap<Wr>> BaseWrappedMapExt<Wr> for To {}
 
 pub trait BaseWrappedFlattenExt<
     Wr: ?Sized + BaseFlatten<Wrap<T> = Self> + BaseFlatten<Wrap<U> = T>,
@@ -87,7 +84,7 @@ impl<
         Wr: ?Sized + BaseFlatten<Wrap<T> = Self> + BaseFlatten<Wrap<U> = T>,
         T: BaseUnwrap<Wr, T = U>,
         U,
-        Wrapped: BaseUnwrap<Wr, T = T>,
-    > BaseWrappedFlattenExt<Wr, T, U> for Wrapped
+        To: BaseUnwrap<Wr, T = T>,
+    > BaseWrappedFlattenExt<Wr, T, U> for To
 {
 }
