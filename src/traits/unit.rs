@@ -2,9 +2,7 @@ use either::Either;
 
 use crate::{Impl, Trait};
 
-pub struct Unit;
-
-impl Trait for Unit {
+impl Trait for () {
     type Assocaited = Self;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = ();
     type Out<'out, Imp: Impl<Self>> = ();
@@ -13,7 +11,7 @@ impl Trait for Unit {
     fn union(_: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {}
 }
 
-impl Impl<Unit> for () {
+impl Impl<()> for () {
     type Associated = Self;
 
     fn method<'out: 'tmp, 'tmp>(_: ())
