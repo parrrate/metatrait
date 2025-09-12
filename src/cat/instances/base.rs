@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use either::Either;
 
 use crate::{
@@ -5,7 +7,7 @@ use crate::{
     cat::{functor::*, morphism::*, util::PureFn},
     traits::{
         base::{Base, BaseExt},
-        is::{Is, IsExt},
+        either::{IntoEither, IntoEitherExt},
     },
     Impl, Trait,
 };
@@ -79,20 +81,36 @@ impl<WrB: ?Sized + BaseMap + BaseFlatten> Flatten for BaseInstance<WrB> {
     }
 }
 
-struct IterateBase<F, X>(F, X);
+struct IterateBase<F, X, Y, Z, Yo>(F, X, Y, Z, PhantomData<Yo>);
 
-impl<WrB: ?Sized + BaseMap, F, X: Copy + Fn(F) -> Either<L, R>, L, R: Impl<Base<WrB, Is<F>>>>
-    BaseIterateFn<WrB> for IterateBase<F, X>
+impl<
+        WrB: ?Sized + BaseMap,
+        F: TraitFn,
+        X: Copy + Fn(F) -> Xo,
+        Y: Copy + Fn(Xo) -> WrB::Wrap<Yo>,
+        Z: Copy + Fn(Yo) -> Either<F, R>,
+        R: Impl<F::Out>,
+        Xo: Impl<Base<WrB, IntoEither<F, F::Out>>>,
+        Yo: Impl<IntoEither<F, F::Out>>,
+    > BaseIterateFn<WrB> for IterateBase<F, X, Y, Z, Yo>
 {
-    type Out = L;
-    fn run(self) -> Either<Self::Out, <WrB as BaseWrap>::Wrap<Self>> {
-        self.1(self.0).map_right(|x| x.into_base().b_map(move |x| Self(x.into_that(), self.1)))
+    type Out = R;
+
+    fn run(self) -> WrB::Wrap<Either<Self, Self::Out>> {
+        self.2(self.1(self.0))
+            .b_map(|x| self.3(x).map_left(|f| Self(f, self.1, self.2, self.3, PhantomData)))
     }
 }
 
 impl<WrB: ?Sized + BaseIterate + BaseMap> Iterate for BaseInstance<WrB> {
     fn iterate<F: IterateFn<Self>>(f: F) -> impl Impl<Self::Wrap<F::Out>> {
-        WrB::iterate(IterateBase(f, F::run))
+        WrB::iterate(IterateBase(
+            f,
+            F::run,
+            BaseExt::into_base,
+            IntoEitherExt::into_either,
+            PhantomData,
+        ))
     }
 }
 

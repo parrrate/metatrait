@@ -4,8 +4,8 @@ use futures::future::select;
 use crate::{
     cat::{functor::*, morphism::*},
     traits::{
+        either::IntoEitherExt,
         future::{ToFuture, ToFutureExt},
-        is::IsExt,
     },
     Impl, Trait,
 };
@@ -90,11 +90,11 @@ impl Flatten for Futures {
 
 impl Iterate for Futures {
     fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<Self::Wrap<F::Out>> {
-        async move {
+        async {
             loop {
-                match f.run() {
-                    Either::Left(x) => break x,
-                    Either::Right(next) => f = next.to_future().await.into_that(),
+                match f.run().to_future().await.into_either() {
+                    Either::Left(next) => f = next,
+                    Either::Right(x) => break x,
                 }
             }
         }
