@@ -93,3 +93,9 @@ impl<E> BaseTranspose for Results<E> {
         }
     }
 }
+
+impl<E> BaseInspect for Results<E> {
+    fn inspect<Out, In>(x: Self::Wrap<In>, f: impl FnOnce(&mut In) -> Out) -> Self::Wrap<Out> {
+        x.map(|mut x| f(&mut x))
+    }
+}

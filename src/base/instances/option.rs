@@ -89,3 +89,9 @@ impl BaseTranspose for Options {
         }
     }
 }
+
+impl BaseInspect for Options {
+    fn inspect<Out, In>(x: Self::Wrap<In>, f: impl FnOnce(&mut In) -> Out) -> Self::Wrap<Out> {
+        x.map(|mut x| f(&mut x))
+    }
+}

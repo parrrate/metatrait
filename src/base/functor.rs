@@ -70,6 +70,10 @@ pub trait BaseTranspose: BaseWrap {
     ) -> Wr::Wrap<Self::Wrap<T>>;
 }
 
+pub trait BaseInspect: BaseWrap {
+    fn inspect<Out, In>(_: Self::Wrap<In>, _: impl FnOnce(&mut In) -> Out) -> Self::Wrap<Out>;
+}
+
 pub trait BaseFunctor: BaseMap {}
 
 impl<Wr: ?Sized + BaseMap> BaseFunctor for Wr {}
