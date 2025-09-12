@@ -1,4 +1,4 @@
-use either::Either;
+pub use either::Either;
 
 pub mod base;
 pub mod cat;
