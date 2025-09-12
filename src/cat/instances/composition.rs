@@ -223,7 +223,7 @@ mod test {
     use super::*;
 
     fn a_five<Wr: Map + Pure>() -> impl Impl<Wr::Wrap<Is<i32>>> {
-        let x = Wr::pure::<Is<_>>(0);
+        let x = Wr::pure(0);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);
         let x = x.w_map(|x| x + 1);

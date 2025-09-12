@@ -88,13 +88,13 @@ impl Transpose for Verbatim {
 
 #[cfg(test)]
 mod test {
-    use crate::traits::is::{Is, IsExt};
+    use crate::traits::is::IsExt;
 
     use super::*;
 
     #[test]
     fn test() {
-        let x = Verbatim::pure::<Is<_>>(0);
+        let x = Verbatim::pure(0);
         let x = Verbatim::map(x, |x| x + 1);
         let x = Verbatim::map(x, |x| x + 1);
         let x = Verbatim::map(x, |x| x + 1);

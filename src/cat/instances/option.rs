@@ -6,17 +6,14 @@ pub type Options = BaseInstance<crate::base::instances::option::Options>;
 mod test {
     use crate::{
         cat::functor::*,
-        traits::{
-            base::BaseExt,
-            is::{Is, IsExt},
-        },
+        traits::{base::BaseExt, is::IsExt},
     };
 
     use super::*;
 
     #[test]
     fn test() {
-        let x = Options::pure::<Is<_>>(0);
+        let x = Options::pure(0);
         let x = Options::map(x, |x| x + 1);
         let x = Options::map(x, |x| x + 1);
         let x = Options::map(x, |x| x + 1);
