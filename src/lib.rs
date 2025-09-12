@@ -31,15 +31,15 @@ pub trait Impl<Tr: ?Sized + Trait>: Sized {
 pub type Sample<Tr> = <Tr as Trait>::Sample;
 pub type Common<'a, Tr> = <Tr as Trait>::Common<'a>;
 
-pub trait Structural: Trait {
+pub trait Free: Trait {
     type Free: Impl<Self>;
     fn free(_: impl Impl<Self>) -> Self::Free;
 }
 
-pub trait StructuralExt<Tr: ?Sized + Structural>: Impl<Tr> {
+pub trait FreeExt<Tr: ?Sized + Free>: Impl<Tr> {
     fn free(self) -> Tr::Free {
         Tr::free(self)
     }
 }
 
-impl<Tr: ?Sized + Structural, T: Impl<Tr>> StructuralExt<Tr> for T {}
+impl<Tr: ?Sized + Free, T: Impl<Tr>> FreeExt<Tr> for T {}
