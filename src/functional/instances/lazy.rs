@@ -1,5 +1,5 @@
-use crate::linked::{
-    functional::{Flatten, Map, Map2, MapFn2, Pure, Select, SelectFn, Wrap},
+use crate::{
+    functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Wrap},
     traits::to::{To, ToExt},
     Impl, Trait,
 };
@@ -17,7 +17,7 @@ impl Pure for Lazy {
 }
 
 impl Map for Lazy {
-    fn map<In: ?Sized + Trait, F: crate::linked::functional::MapFn<In>>(
+    fn map<In: ?Sized + Trait, F: MapFn<In>>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
@@ -55,7 +55,7 @@ impl Flatten for Lazy {
 
 #[cfg(test)]
 mod test {
-    use crate::linked::traits::{
+    use crate::traits::{
         empty::Empty,
         is::{Is, IsExt},
     };

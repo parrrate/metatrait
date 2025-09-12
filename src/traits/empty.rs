@@ -1,4 +1,4 @@
-use crate::linked::{Impl, Trait};
+use crate::{Impl, Trait};
 
 pub enum Empty {}
 

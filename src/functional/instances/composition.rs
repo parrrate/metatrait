@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use either::Either;
 
-use crate::linked::{
+use crate::{
     functional::{
         BaseFn, Flatten, FlattenFn, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, SelectMap01,
         SelectMap10, Transpose, TransposeFn, Wrap,
@@ -187,7 +187,7 @@ impl<Uo: Transpose + Map + Pure, Ui: Transpose> Transpose for Composition<Uo, Ui
 
 #[cfg(test)]
 mod test {
-    use crate::linked::{
+    use crate::{
         functional::instances::{futures::Futures, lazy::Lazy},
         traits::{
             empty::Empty,

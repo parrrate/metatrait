@@ -1,7 +1,7 @@
 use either::Either;
 use futures::future::select;
 
-use crate::linked::{
+use crate::{
     functional::{Flatten, Map, Map2, MapFn, MapFn2, Pure, Select, SelectFn, Wrap},
     traits::future::{ToFuture, ToFutureExt},
     Impl, Trait,
@@ -83,7 +83,7 @@ impl Flatten for Futures {
 
 #[cfg(test)]
 mod test {
-    use crate::linked::traits::{
+    use crate::traits::{
         empty::Empty,
         is::{Is, IsExt},
     };
