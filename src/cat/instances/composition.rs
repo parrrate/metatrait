@@ -13,6 +13,17 @@ use crate::{
 
 pub struct Composition<WrO, WrI>(WrO, WrI);
 
+impl<
+        WrO: Wrap<Wrap<Ti> = To>,
+        WrI: Wrap<Wrap<T> = Ti>,
+        To: ?Sized + Unwrap<WrO, Tr = Ti>,
+        Ti: ?Sized + Unwrap<WrI, Tr = T>,
+        T: ?Sized + Trait,
+    > Unwrap<Composition<WrO, WrI>> for To
+{
+    type Tr = T;
+}
+
 impl<WrO: Wrap, WrI: Wrap> Wrap for Composition<WrO, WrI> {
     type Wrap<Tr: ?Sized + Trait> = WrO::Wrap<WrI::Wrap<Tr>>;
 }
