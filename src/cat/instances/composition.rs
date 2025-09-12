@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use either::Either;
+use ghost::phantom;
 
 use crate::{
     cat::{
@@ -9,8 +10,11 @@ use crate::{
         util::{FlattenFn, SelectMap01, SelectMap10, TransposeFn},
     },
     existence::{Into2, When},
+    traits::either::{IntoEither, IntoEitherExt},
     Impl, Trait,
 };
+
+use super::either::Eithers;
 
 pub struct Composition<WrO, WrI>(WrO, WrI);
 
@@ -182,6 +186,40 @@ impl<WrO: Flatten + Map + Pure, WrI: Flatten + Transpose> Flatten for Compositio
         x.w_map(TransposeFn::<WrO, WrI, _>)
             .w_flatten()
             .w_map(FlattenFn::<WrI, _>)
+    }
+}
+
+struct CompositionIterate<F, WrI: ?Sized>(F, PhantomData<WrI>);
+
+impl<F: TraitFn, WrI: ?Sized + Wrap> TraitFn for CompositionIterate<F, WrI> {
+    type Out = WrI::Wrap<F::Out>;
+}
+
+#[phantom]
+struct CompositionIterateMap<F, Wr: ?Sized, Tr: ?Sized>;
+
+impl<F, Wr: ?Sized + Transpose, Tr: ?Sized + Trait> MapFn<Wr::Wrap<IntoEither<F, Tr>>>
+    for CompositionIterateMap<F, Wr, Tr>
+{
+    type Out = IntoEither<CompositionIterate<F, Wr>, Wr::Wrap<Tr>>;
+    fn run(self, x: impl Impl<Wr::Wrap<IntoEither<F, Tr>>>) -> impl Impl<Self::Out> {
+        Wr::transpose::<Eithers<F>, _>(x)
+            .into_either()
+            .map_left(|f| CompositionIterate(f, PhantomData))
+    }
+}
+
+impl<F: IterateFn<Composition<WrO, WrI>>, WrO: Map, WrI: Transpose> IterateFn<WrO>
+    for CompositionIterate<F, WrI>
+{
+    fn run(self) -> impl Impl<WrO::Wrap<IntoEither<Self, Self::Out>>> {
+        WrO::map(self.0.run(), CompositionIterateMap::<F, WrI, F::Out>)
+    }
+}
+
+impl<WrO: Map + Iterate, WrI: Transpose> Iterate for Composition<WrO, WrI> {
+    fn iterate<F: IterateFn<Self>>(f: F) -> impl Impl<Self::Wrap<F::Out>> {
+        WrO::iterate(CompositionIterate(f, PhantomData))
     }
 }
 
