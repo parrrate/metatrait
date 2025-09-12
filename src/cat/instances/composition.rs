@@ -203,7 +203,7 @@ impl<F, Wr: ?Sized + Transpose, Tr: ?Sized + Trait> MapFn<Wr::Wrap<IntoEither<F,
 {
     type Out = IntoEither<CompositionIterate<F, Wr>, Wr::Wrap<Tr>>;
     fn run(self, x: impl Impl<Wr::Wrap<IntoEither<F, Tr>>>) -> impl Impl<Self::Out> {
-        Wr::transpose::<Eithers<F>, _>(x)
+        Wr::transpose::<Eithers<_>, _>(x)
             .into_either()
             .map_left(|f| CompositionIterate(f, PhantomData))
     }
@@ -213,7 +213,7 @@ impl<F: IterateFn<Composition<WrO, WrI>>, WrO: Map, WrI: Transpose> IterateFn<Wr
     for CompositionIterate<F, WrI>
 {
     fn run(self) -> impl Impl<WrO::Wrap<IntoEither<Self, Self::Out>>> {
-        WrO::map(self.0.run(), CompositionIterateMap::<F, WrI, F::Out>)
+        WrO::map(self.0.run(), CompositionIterateMap)
     }
 }
 
