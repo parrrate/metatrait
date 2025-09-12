@@ -17,7 +17,7 @@ impl Pure for Lazy {
 }
 
 impl Map for Lazy {
-    fn map<In: ?Sized + Trait, F: MapFn<In>>(
+    fn map<F: MapFn<In>, In: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<Self::Wrap<F::Out>> {
@@ -26,7 +26,7 @@ impl Map for Lazy {
 }
 
 impl Map2 for Lazy {
-    fn map2<In0: ?Sized + Trait, In1: ?Sized + Trait, F: MapFn2<In0, In1>>(
+    fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
@@ -36,7 +36,7 @@ impl Map2 for Lazy {
 }
 
 impl Select for Lazy {
-    fn select<In0: ?Sized + Trait, In1: ?Sized + Trait, F: SelectFn<In0, In1>>(
+    fn select<F: SelectFn<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
