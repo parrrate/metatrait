@@ -1,3 +1,5 @@
+use either::Either;
+
 use crate::linked::{Impl, Trait};
 
 pub struct To<Tr: ?Sized>(Tr);
@@ -6,6 +8,11 @@ impl<Tr: ?Sized + Trait> Trait for To<Tr> {
     type Assocaited = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Imp::Associated;
+    type Sample = fn() -> Tr::Sample;
+
+    fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
+        || Tr::union(x.map_left(ToExt::to).map_right(ToExt::to))
+    }
 }
 
 impl<F: FnOnce() -> Out, Out: Impl<Tr>, Tr: ?Sized + Trait> Impl<To<Tr>> for F {
