@@ -7,7 +7,7 @@ use super::empty::Empty;
 pub struct Is<That>(That);
 
 impl<That> Trait for Is<That> {
-    type Assocaited = Empty;
+    type Assocaited<Imp: Impl<Self>> = Empty;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = That;
     type Sample = That;

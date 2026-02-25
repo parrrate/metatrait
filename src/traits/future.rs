@@ -14,7 +14,7 @@ use crate::{Impl, Trait};
 pub struct ToFuture<Tr: ?Sized>(Tr);
 
 impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
-    type Assocaited = Tr;
+    type Assocaited<Imp: Impl<Self>> = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> =
         (Pin<&'tmp mut Imp>, &'tmp mut Context<'out>);
     type Out<'out, Imp: Impl<Self>> = Poll<Imp::Associated>;
@@ -24,11 +24,13 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     where
         Self: 'a;
 
-    async fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self::Assocaited> {
-        Trait::union(match x {
-            Either::Left(x) => Either::Left(x.to_future().await),
-            Either::Right(x) => Either::Right(x.to_future().await),
-        })
+    fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
+        async move {
+            Trait::union(match x {
+                Either::Left(x) => Either::Left(x.to_future().await),
+                Either::Right(x) => Either::Right(x.to_future().await),
+            })
+        }
     }
 
     fn common<'a>(x: impl 'a + Impl<Self>) -> Self::Common<'a>

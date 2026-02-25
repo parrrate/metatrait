@@ -5,7 +5,7 @@ use crate::{Free, Impl, Trait};
 pub struct IntoEither<L, Tr: ?Sized>(L, Tr);
 
 impl<L, Tr: ?Sized + Trait> Trait for IntoEither<L, Tr> {
-    type Assocaited = Tr;
+    type Assocaited<Imp: Impl<Self>> = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Either<L, Imp::Associated>;
     type Sample = Either<L, Tr::Sample>;

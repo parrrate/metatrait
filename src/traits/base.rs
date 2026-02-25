@@ -7,7 +7,7 @@ use crate::{base::functor::*, Free, Impl, Trait};
 pub struct Base<Wr: ?Sized, Tr: ?Sized>(PhantomData<Wr>, Tr);
 
 impl<Wr: ?Sized + BaseMap, Tr: ?Sized + Trait> Trait for Base<Wr, Tr> {
-    type Assocaited = Tr;
+    type Assocaited<Imp: Impl<Self>> = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + crate::Impl<Self>> = Imp;
     type Out<'out, Imp: crate::Impl<Self>> = Wr::Wrap<Imp::Associated>;
     type Sample = Wr::Wrap<Tr::Sample>;

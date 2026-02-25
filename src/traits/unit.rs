@@ -3,7 +3,7 @@ use either::Either;
 use crate::{Free, Impl, Trait};
 
 impl Trait for () {
-    type Assocaited = Self;
+    type Assocaited<Imp: Impl<Self>> = Self;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = ();
     type Sample = ();

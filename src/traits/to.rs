@@ -5,7 +5,7 @@ use crate::{Impl, Trait};
 pub struct To<Tr: ?Sized>(Tr);
 
 impl<Tr: ?Sized + Trait> Trait for To<Tr> {
-    type Assocaited = Tr;
+    type Assocaited<Imp: Impl<Self>> = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Imp::Associated;
     type Sample = fn() -> Tr::Sample;

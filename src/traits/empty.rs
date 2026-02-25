@@ -3,7 +3,7 @@ use crate::{Free, Impl, Trait};
 pub enum Empty {}
 
 impl Trait for Empty {
-    type Assocaited = Self;
+    type Assocaited<Imp: Impl<Self>> = Self;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Self;
     type Out<'out, Imp: Impl<Self>> = Self;
     type Sample = Empty;
