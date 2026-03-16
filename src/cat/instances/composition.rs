@@ -256,7 +256,7 @@ mod test {
             instances::{futures::Futures, lazy::Lazy},
             util::Wraps,
         },
-        traits::{future::ToFutureExt, is::IsExt, to::ToExt},
+        traits::{future::IntoFuture2, is::IsExt, to::ToExt},
     };
 
     use super::*;
@@ -276,7 +276,7 @@ mod test {
     fn test() {
         type Wr = Composition<Futures, Lazy>;
         let x = wrap_five::<Wr>();
-        let x = x.to_future();
+        let x = x.t_into_future();
         let x = futures::executor::block_on(x);
         let x = x.to();
         let x = x.into_that();

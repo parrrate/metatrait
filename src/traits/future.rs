@@ -27,8 +27,8 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
         async move {
             Trait::union(match x {
-                Either::Left(x) => Either::Left(x.to_future().await),
-                Either::Right(x) => Either::Right(x.to_future().await),
+                Either::Left(x) => Either::Left(x.t_into_future().await),
+                Either::Right(x) => Either::Right(x.t_into_future().await),
             })
         }
     }
@@ -37,7 +37,7 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     where
         Self: 'a,
     {
-        Box::pin(async { Trait::common(x.to_future().await) })
+        Box::pin(async { Trait::common(x.t_into_future().await) })
     }
 }
 
@@ -60,10 +60,10 @@ impl<F: Impl<ToFuture<Tr>>, Tr: ?Sized + Trait> Future for TraitFuture<F, Tr> {
     }
 }
 
-pub trait ToFutureExt<Tr: ?Sized + Trait>: Impl<ToFuture<Tr>> {
-    fn to_future(self) -> impl Future<Output = Self::Associated> {
+pub trait IntoFuture2<Tr: ?Sized + Trait>: Impl<ToFuture<Tr>> {
+    fn t_into_future(self) -> impl Future<Output = Self::Associated> {
         TraitFuture(self, PhantomData)
     }
 }
 
-impl<F: Impl<ToFuture<Tr>>, Tr: ?Sized + Trait> ToFutureExt<Tr> for F {}
+impl<F: Impl<ToFuture<Tr>>, Tr: ?Sized + Trait> IntoFuture2<Tr> for F {}

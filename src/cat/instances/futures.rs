@@ -10,7 +10,7 @@ use crate::{
     cat::{functor::*, morphism::*},
     traits::{
         either::IntoEitherExt,
-        future::{ToFuture, ToFutureExt},
+        future::{ToFuture, IntoFuture2},
     },
     FreeExt, Impl, Trait,
 };
@@ -36,7 +36,7 @@ impl Map for Futures {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Future<Output: Impl<F::Out>> {
-        x.to_future().map(|x| f.run(x))
+        x.t_into_future().map(|x| f.run(x))
     }
 }
 
@@ -46,7 +46,7 @@ impl Map2 for Futures {
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
     ) -> impl Future<Output: Impl<F::Out>> {
-        futures::future::join(x0.to_future(), x1.to_future()).map(|(x0, x1)| f.run(x0, x1))
+        futures::future::join(x0.t_into_future(), x1.t_into_future()).map(|(x0, x1)| f.run(x0, x1))
     }
 }
 
@@ -58,8 +58,8 @@ impl Select for Futures {
     ) -> impl Impl<F::Out> {
         Trait::union(
             match select(
-                std::pin::pin!(x0.to_future()),
-                std::pin::pin!(x1.to_future()),
+                std::pin::pin!(x0.t_into_future()),
+                std::pin::pin!(x1.t_into_future()),
             )
             .await
             {
@@ -84,14 +84,14 @@ impl Flatten for Futures {
     fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
     ) -> impl Future<Output: Impl<Tr>> {
-        x.to_future().map(|x| x.to_future()).flatten()
+        x.t_into_future().map(|x| x.t_into_future()).flatten()
     }
 }
 
 impl Iterate for Futures {
     async fn iterate<F: IterateFn<Self>>(mut f: F) -> impl Impl<F::Out> {
         loop {
-            match f.run().to_future().await.into_either() {
+            match f.run().t_into_future().await.into_either() {
                 Either::Left(next) => f = next,
                 Either::Right(x) => break x,
             }
@@ -104,7 +104,7 @@ impl Inspect for Futures {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<F::Out> {
-        f.run(&mut x.to_future().await).to_future().await.free()
+        f.run(&mut x.t_into_future().await).t_into_future().await.free()
     }
 }
 
@@ -122,7 +122,7 @@ mod test {
         let x = Futures::map(x, |x| x + 1);
         let x = Futures::map(x, |x| x + 1);
         let x = Futures::map(x, |x| x + 1);
-        let x = x.to_future();
+        let x = x.t_into_future();
         let x = futures::executor::block_on(x);
         let x = x.into_that();
         assert_eq!(x, 5);
