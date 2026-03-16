@@ -1,5 +1,10 @@
+use std::future::Future;
+
 use either::Either;
-use futures::future::select;
+use futures::{
+    future::{ready, select},
+    FutureExt,
+};
 
 use crate::{
     cat::{functor::*, morphism::*},
@@ -21,28 +26,27 @@ impl Wrap for Futures {
 }
 
 impl Pure for Futures {
-    async fn pure<Tr: ?Sized + Trait>(x: impl Impl<Tr>) -> impl Impl<Tr> {
-        x
+    fn pure<Tr: ?Sized + Trait>(x: impl Impl<Tr>) -> impl Future<Output: Impl<Tr>> {
+        ready(x)
     }
 }
 
 impl Map for Futures {
-    async fn map<F: MapFn<In>, In: ?Sized + Trait>(
+    fn map<F: MapFn<In>, In: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<In>>,
         f: F,
-    ) -> impl Impl<F::Out> {
-        f.run(x.to_future().await)
+    ) -> impl Future<Output: Impl<F::Out>> {
+        x.to_future().map(|x| f.run(x))
     }
 }
 
 impl Map2 for Futures {
-    async fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
+    fn map2<F: MapFn2<In0, In1>, In0: ?Sized + Trait, In1: ?Sized + Trait>(
         x0: impl Impl<Self::Wrap<In0>>,
         x1: impl Impl<Self::Wrap<In1>>,
         f: F,
-    ) -> impl Impl<F::Out> {
-        let (x0, x1) = futures::join!(x0.to_future(), x1.to_future());
-        f.run(x0, x1)
+    ) -> impl Future<Output: Impl<F::Out>> {
+        futures::future::join(x0.to_future(), x1.to_future()).map(|(x0, x1)| f.run(x0, x1))
     }
 }
 
@@ -77,10 +81,10 @@ impl Select for Futures {
 }
 
 impl Flatten for Futures {
-    async fn flatten<Tr: ?Sized + Trait>(
+    fn flatten<Tr: ?Sized + Trait>(
         x: impl Impl<Self::Wrap<Self::Wrap<Tr>>>,
-    ) -> impl Impl<Tr> {
-        x.to_future().await.to_future().await
+    ) -> impl Future<Output: Impl<Tr>> {
+        x.to_future().map(|x| x.to_future()).flatten()
     }
 }
 
@@ -112,7 +116,7 @@ mod test {
 
     #[test]
     fn test() {
-        let x = Futures::pure(0);
+        let x = Futures::pure(0i32);
         let x = Futures::map(x, |x| x + 1);
         let x = Futures::map(x, |x| x + 1);
         let x = Futures::map(x, |x| x + 1);
