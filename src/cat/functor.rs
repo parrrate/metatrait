@@ -93,6 +93,16 @@ pub trait Monad: Applicative + Flatten {}
 
 impl<Wr: ?Sized + Applicative + Flatten> Monad for Wr {}
 
+pub trait PureExt<Tr: ?Sized + Trait>: Impl<Tr> {
+    fn w_pure<Wr: ?Sized + Pure>(self) -> impl Impl<Wr::Wrap<Tr>>;
+}
+
+impl<Tr: ?Sized + Trait, T: Impl<Tr>> PureExt<Tr> for T {
+    fn w_pure<Wr: ?Sized + Pure>(self) -> impl Impl<Wr::Wrap<Tr>> {
+        Wr::pure::<Tr>(self)
+    }
+}
+
 pub trait WrappedMapExt<Wr: ?Sized + Map<Wrap<Tr::Tr> = Tr>, Tr: ?Sized + Wrapped<Wr>>:
     Impl<Tr>
 {
