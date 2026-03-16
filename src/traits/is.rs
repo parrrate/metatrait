@@ -18,8 +18,8 @@ impl<That> Trait for Is<That> {
 
     fn union(x: Either<impl Impl<Self>, impl Impl<Self>>) -> impl Impl<Self> {
         match x {
-            Either::Left(x) => x.into_that(),
-            Either::Right(x) => x.into_that(),
+            Either::Left(x) => x.t_into(),
+            Either::Right(x) => x.t_into(),
         }
     }
 
@@ -27,7 +27,7 @@ impl<That> Trait for Is<That> {
     where
         Self: 'a,
     {
-        x.into_that()
+        x.t_into()
     }
 }
 
@@ -42,8 +42,8 @@ impl<That> Impl<Is<Self>> for That {
     }
 }
 
-pub trait IsExt {
-    fn into_that<That>(self) -> That
+pub trait Into2 {
+    fn t_into<That>(self) -> That
     where
         Self: Impl<Is<That>>,
     {
@@ -51,12 +51,12 @@ pub trait IsExt {
     }
 }
 
-impl<That> IsExt for That {}
+impl<That> Into2 for That {}
 
 impl<That> Free for Is<That> {
     type Free = That;
 
     fn free(x: impl Impl<Self>) -> Self::Free {
-        x.into_that()
+        x.t_into()
     }
 }

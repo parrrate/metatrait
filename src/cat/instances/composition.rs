@@ -256,7 +256,7 @@ mod test {
             instances::{futures::Futures, lazy::Lazy},
             util::Wraps,
         },
-        traits::{future::IntoFuture2, is::IsExt, to::ToExt},
+        traits::{future::IntoFuture2, is::Into2, to::ToExt},
     };
 
     use super::*;
@@ -279,7 +279,7 @@ mod test {
         let x = x.t_into_future();
         let x = futures::executor::block_on(x);
         let x = x.to();
-        let x = x.into_that();
+        let x = x.t_into();
         assert_eq!(x, 5);
     }
 }

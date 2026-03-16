@@ -3,7 +3,7 @@ use either::Either;
 use crate::{
     traits::{
         either::IntoEither,
-        is::{Is, IsExt},
+        is::{Into2, Is},
     },
     Free, Impl, Trait,
 };
@@ -19,7 +19,7 @@ impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In>> for F {
     type Out = Is<Out>;
 
     fn run(self, x: impl Impl<Is<In>>) -> impl Impl<Self::Out> {
-        self(x.into_that())
+        self(x.t_into())
     }
 }
 

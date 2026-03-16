@@ -8,7 +8,7 @@ use metatrait::{
     },
     traits::{
         either::IntoEither,
-        is::{Is, IsExt},
+        is::{Into2, Is},
     },
     Impl, Trait,
 };
@@ -71,6 +71,6 @@ fn main() {
             next: None,
         }))),
     };
-    let count = stack.count().into_that();
+    let count = stack.count().t_into();
     println!("{count}");
 }

@@ -84,7 +84,7 @@ impl Inspect for Lazy {
 
 #[cfg(test)]
 mod test {
-    use crate::traits::is::IsExt;
+    use crate::traits::is::Into2;
 
     use super::*;
 
@@ -97,7 +97,7 @@ mod test {
         let x = Lazy::map(x, |x| x + 1);
         let x = Lazy::map(x, |x| x + 1);
         let x = x.to();
-        let x = x.into_that();
+        let x = x.t_into();
         assert_eq!(x, 5);
     }
 }

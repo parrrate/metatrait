@@ -6,7 +6,7 @@ pub type Results<E> = BaseInstance<crate::base::instances::result::Results<E>>;
 mod test {
     use crate::{
         cat::functor::*,
-        traits::{base::BaseExt, is::IsExt},
+        traits::{base::BaseExt, is::Into2},
     };
 
     use super::*;
@@ -21,7 +21,7 @@ mod test {
         let x = Results::<()>::map(x, |x| x + 1);
         let x = x.into_base();
         let x = x.unwrap();
-        let x = x.into_that();
+        let x = x.t_into();
         assert_eq!(x, 5);
     }
 }

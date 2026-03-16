@@ -10,7 +10,7 @@ use crate::{
     cat::{functor::*, morphism::*},
     traits::{
         either::IntoEitherExt,
-        future::{ToFuture, IntoFuture2},
+        future::{IntoFuture2, ToFuture},
     },
     FreeExt, Impl, Trait,
 };
@@ -104,13 +104,16 @@ impl Inspect for Futures {
         x: impl Impl<Self::Wrap<In>>,
         f: F,
     ) -> impl Impl<F::Out> {
-        f.run(&mut x.t_into_future().await).t_into_future().await.free()
+        f.run(&mut x.t_into_future().await)
+            .t_into_future()
+            .await
+            .free()
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::traits::is::IsExt;
+    use crate::traits::is::Into2;
 
     use super::*;
 
@@ -124,7 +127,7 @@ mod test {
         let x = Futures::map(x, |x| x + 1);
         let x = x.t_into_future();
         let x = futures::executor::block_on(x);
-        let x = x.into_that();
+        let x = x.t_into();
         assert_eq!(x, 5);
     }
 }

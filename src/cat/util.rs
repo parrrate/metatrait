@@ -6,7 +6,7 @@ use ghost::phantom;
 use crate::{
     traits::{
         either::IntoEither,
-        is::{Is, IsExt},
+        is::{Into2, Is},
     },
     Impl, Trait,
 };
@@ -174,6 +174,6 @@ impl<L, R> MapFn<Is<Either<L, R>>> for IsToEither {
     type Out = IntoEither<L, Is<R>>;
 
     fn run(self, x: impl Impl<Is<Either<L, R>>>) -> impl Impl<Self::Out> {
-        x.into_that()
+        x.t_into()
     }
 }
