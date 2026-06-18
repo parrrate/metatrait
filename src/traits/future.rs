@@ -20,7 +20,7 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     type Out<'out, Imp: Impl<Self>> = Poll<Imp::Associated>;
     type Sample = Pending<Tr::Sample>;
     type Common<'a>
-        = Pin<Box<dyn 'a + Future<Output = Tr::Common<'a>>>>
+        = Pin<Box<dyn 'a + Send + Future<Output = Tr::Common<'a>>>>
     where
         Self: 'a;
 
@@ -41,7 +41,7 @@ impl<Tr: ?Sized + Trait> Trait for ToFuture<Tr> {
     }
 }
 
-impl<F: Future<Output = Out>, Out: Impl<Tr>, Tr: ?Sized + Trait> Impl<ToFuture<Tr>> for F {
+impl<F: Send + Future<Output = Out>, Out: Impl<Tr>, Tr: ?Sized + Trait> Impl<ToFuture<Tr>> for F {
     type Associated = F::Output;
 
     fn method<'out: 'tmp, 'tmp>((this, cx): (Pin<&mut Self>, &mut Context<'_>)) -> Poll<F::Output> {

@@ -4,7 +4,7 @@ use crate::{Free, Impl, Trait};
 
 pub struct IntoEither<L, Tr: ?Sized>(L, Tr);
 
-impl<L, Tr: ?Sized + Trait> Trait for IntoEither<L, Tr> {
+impl<L: Send, Tr: ?Sized + Trait> Trait for IntoEither<L, Tr> {
     type Assocaited<Imp: Impl<Self>> = Tr;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = Either<L, Imp::Associated>;
@@ -30,7 +30,7 @@ impl<L, Tr: ?Sized + Trait> Trait for IntoEither<L, Tr> {
     }
 }
 
-impl<L, Tr: ?Sized + Trait, T: Impl<Tr>> Impl<IntoEither<L, Tr>> for Either<L, T> {
+impl<L: Send, Tr: ?Sized + Trait, T: Impl<Tr>> Impl<IntoEither<L, Tr>> for Either<L, T> {
     type Associated = T;
 
     fn method<'out: 'tmp, 'tmp>(
@@ -43,15 +43,15 @@ impl<L, Tr: ?Sized + Trait, T: Impl<Tr>> Impl<IntoEither<L, Tr>> for Either<L, T
     }
 }
 
-pub trait IntoEitherExt<L, Tr: ?Sized + Trait>: Impl<IntoEither<L, Tr>> {
+pub trait IntoEitherExt<L: Send, Tr: ?Sized + Trait>: Impl<IntoEither<L, Tr>> {
     fn into_either(self) -> Either<L, impl Impl<Tr>> {
         Self::method(self)
     }
 }
 
-impl<L, Tr: ?Sized + Trait, T: Impl<IntoEither<L, Tr>>> IntoEitherExt<L, Tr> for T {}
+impl<L: Send, Tr: ?Sized + Trait, T: Impl<IntoEither<L, Tr>>> IntoEitherExt<L, Tr> for T {}
 
-impl<L, Tr: ?Sized + Free> Free for IntoEither<L, Tr> {
+impl<L: Send, Tr: ?Sized + Free> Free for IntoEither<L, Tr> {
     type Free = Either<L, Tr::Free>;
 
     fn free(x: impl Impl<Self>) -> Self::Free {

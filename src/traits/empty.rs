@@ -13,7 +13,7 @@ impl Trait for Empty {
     fn common<'a>(_: impl 'a + Impl<Self>) -> Self::Common<'a> {}
 }
 
-impl<I> Impl<Empty> for I {
+impl<I: Send> Impl<Empty> for I {
     type Associated = Self;
 
     fn method<'out: 'tmp, 'tmp>(empty: Empty) -> Empty

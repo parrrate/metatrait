@@ -10,12 +10,12 @@ use crate::{
 
 use super::functor::*;
 
-pub trait MapFn<In: ?Sized + Trait> {
+pub trait MapFn<In: ?Sized + Trait>: Send {
     type Out: ?Sized + Trait;
     fn run(self, _: impl Impl<In>) -> impl Impl<Self::Out>;
 }
 
-impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In>> for F {
+impl<F: Send + FnOnce(In) -> Out, In: Send, Out: Send> MapFn<Is<In>> for F {
     type Out = Is<Out>;
 
     fn run(self, x: impl Impl<Is<In>>) -> impl Impl<Self::Out> {
@@ -23,12 +23,12 @@ impl<F: FnOnce(In) -> Out, In, Out> MapFn<Is<In>> for F {
     }
 }
 
-pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait> {
+pub trait MapFn2<In0: ?Sized + Trait, In1: ?Sized + Trait>: Send {
     type Out: ?Sized + Trait;
     fn run(self, _: impl Impl<In0>, _: impl Impl<In1>) -> impl Impl<Self::Out>;
 }
 
-pub trait TraitFn: Sized {
+pub trait TraitFn: Sized + Send {
     type Out: ?Sized + Trait;
 }
 
@@ -54,7 +54,7 @@ pub trait IterateFnExt<Wr: ?Sized + Iterate>: IterateFn<Wr> {
 
 impl<Wr: ?Sized + Iterate, F: IterateFn<Wr>> IterateFnExt<Wr> for F {}
 
-pub trait InspectFn<In: ?Sized + Trait, Wr: ?Sized + Wrap> {
+pub trait InspectFn<In: ?Sized + Trait, Wr: ?Sized + Wrap>: Send {
     type Out: ?Sized + Free;
     fn run(self, _: &mut impl Impl<In>) -> impl Impl<Wr::Wrap<Self::Out>>;
 }

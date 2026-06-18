@@ -86,9 +86,9 @@ struct IterateBase<F, X, Y, Z, Yo>(F, X, Y, Z, PhantomData<Yo>);
 impl<
         WrB: ?Sized + BaseMap,
         F: TraitFn,
-        X: Copy + Fn(F) -> Xo,
-        Y: Copy + Fn(Xo) -> WrB::Wrap<Yo>,
-        Z: Copy + Fn(Yo) -> Either<F, R>,
+        X: Send + Copy + Fn(F) -> Xo,
+        Y: Send + Copy + Fn(Xo) -> WrB::Wrap<Yo>,
+        Z: Send + Copy + Fn(Yo) -> Either<F, R>,
         R: Impl<F::Out>,
         Xo: Impl<Base<WrB, IntoEither<F, F::Out>>>,
         Yo: Impl<IntoEither<F, F::Out>>,

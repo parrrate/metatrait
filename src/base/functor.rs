@@ -5,34 +5,34 @@ use crate::existence::When;
 use super::morphism::*;
 
 pub trait BaseUnwrap<T>: BaseWrap<Wrap<Self::T> = T> {
-    type T;
+    type T: Send;
 }
 
-pub trait BaseWrapped<Wr: ?Sized + BaseWrap>: Sized
+pub trait BaseWrapped<Wr: ?Sized + BaseWrap>: Sized + Send
 where
     Wr: BaseWrap<Wrap<Self::T> = Self>,
 {
-    type T;
+    type T: Send;
 }
 
-impl<Wr: ?Sized + BaseUnwrap<T>, T> BaseWrapped<Wr> for T {
+impl<Wr: ?Sized + BaseUnwrap<T>, T: Send> BaseWrapped<Wr> for T {
     type T = <Wr as BaseUnwrap<T>>::T;
 }
 
-pub trait BaseWrap {
-    type Wrap<T>: BaseWrapped<Self, T = T>;
+pub trait BaseWrap: Send {
+    type Wrap<T: Send>: BaseWrapped<Self, T = T>;
 }
 
 pub trait BasePure: BaseWrap {
-    fn pure<T>(_: T) -> Self::Wrap<T>;
+    fn pure<T: Send>(_: T) -> Self::Wrap<T>;
 }
 
 pub trait BaseMap: BaseWrap {
-    fn map<Out, In>(_: Self::Wrap<In>, _: impl FnOnce(In) -> Out) -> Self::Wrap<Out>;
+    fn map<Out: Send, In: Send>(_: Self::Wrap<In>, _: impl FnOnce(In) -> Out) -> Self::Wrap<Out>;
 }
 
 pub trait BaseMap2: BaseWrap {
-    fn map2<Out, In0, In1>(
+    fn map2<Out: Send, In0: Send, In1: Send>(
         _: Self::Wrap<In0>,
         _: Self::Wrap<In1>,
         _: impl FnOnce(In0, In1) -> Out,
@@ -44,11 +44,14 @@ pub type BaseSelectWrap<Wr, In0, In1> = <Wr as BaseWrap>::Wrap<
 >;
 
 pub trait BaseSelect: BaseWrap {
-    fn select<In0, In1>(_: Self::Wrap<In0>, _: Self::Wrap<In1>) -> BaseSelectWrap<Self, In0, In1>;
+    fn select<In0: Send, In1: Send>(
+        _: Self::Wrap<In0>,
+        _: Self::Wrap<In1>,
+    ) -> BaseSelectWrap<Self, In0, In1>;
 }
 
 pub trait BaseFlatten: BaseWrap {
-    fn flatten<T>(_: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T>;
+    fn flatten<T: Send>(_: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T>;
 }
 
 pub trait BaseIterate: BaseWrap {
@@ -61,17 +64,17 @@ pub type BaseToEitherWrap<Wr, In, Out> =
 pub trait BaseToEither: BaseWrap {
     type L: When;
     type R: When;
-    fn either<In, Out>(_: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out>;
+    fn either<In: Send, Out: Send>(_: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out>;
 }
 
 pub trait BaseTranspose: BaseWrap {
-    fn transpose<Wr: ?Sized + BasePure + BaseMap, T>(
+    fn transpose<Wr: ?Sized + BasePure + BaseMap, T: Send>(
         _: Self::Wrap<Wr::Wrap<T>>,
     ) -> Wr::Wrap<Self::Wrap<T>>;
 }
 
 pub trait BaseInspect: BaseWrap {
-    fn inspect<Out, In>(
+    fn inspect<Out: Send, In: Send>(
         _: Self::Wrap<In>,
         _: impl FnOnce(&mut In) -> Self::Wrap<Out>,
     ) -> Self::Wrap<Out>;
@@ -90,7 +93,7 @@ pub trait BaseMonad: BaseApplicative + BaseFlatten {}
 impl<Wr: ?Sized + BaseApplicative + BaseFlatten> BaseMonad for Wr {}
 
 pub trait BaseWrappedMapExt<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>>: BaseWrapped<Wr> {
-    fn b_map<Out>(self, f: impl FnOnce(Self::T) -> Out) -> Wr::Wrap<Out> {
+    fn b_map<Out: Send>(self, f: impl FnOnce(Self::T) -> Out) -> Wr::Wrap<Out> {
         Wr::map(self, f)
     }
 }
@@ -100,7 +103,7 @@ impl<Wr: ?Sized + BaseMap<Wrap<Self::T> = Self>, To: BaseWrapped<Wr>> BaseWrappe
 pub trait BaseWrappedFlattenExt<
     Wr: ?Sized + BaseFlatten<Wrap<Ti> = Self> + BaseFlatten<Wrap<T> = Ti>,
     Ti: BaseWrapped<Wr, T = T>,
-    T,
+    T: Send,
 >: BaseWrapped<Wr, T = Ti>
 {
     fn b_flatten(self) -> Ti {
@@ -111,7 +114,7 @@ pub trait BaseWrappedFlattenExt<
 impl<
         Wr: ?Sized + BaseFlatten<Wrap<Ti> = Self> + BaseFlatten<Wrap<T> = Ti>,
         Ti: BaseWrapped<Wr, T = T>,
-        T,
+        T: Send,
         To: BaseWrapped<Wr, T = Ti>,
     > BaseWrappedFlattenExt<Wr, Ti, T> for To
 {

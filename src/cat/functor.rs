@@ -19,7 +19,7 @@ impl<Wr: ?Sized + Unwrap<Tr>, Tr: ?Sized + Trait> Wrapped<Wr> for Tr {
     type Tr = <Wr as Unwrap<Tr>>::Tr;
 }
 
-pub trait Wrap {
+pub trait Wrap: Send {
     type Wrap<Tr: ?Sized + Trait>: ?Sized + Wrapped<Self, Tr = Tr>;
 }
 

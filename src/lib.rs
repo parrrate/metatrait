@@ -9,7 +9,7 @@ pub mod cat;
 pub mod existence;
 pub mod traits;
 
-pub trait Trait {
+pub trait Trait: Send {
     type Assocaited<Imp: Impl<Self>>: ?Sized + Trait;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>>;
     type Out<'out, Imp: Impl<Self>>;
@@ -24,7 +24,7 @@ pub trait Trait {
         Self: 'a;
 }
 
-pub trait Impl<Tr: ?Sized + Trait>: Sized {
+pub trait Impl<Tr: ?Sized + Trait>: Sized + Send {
     type Associated: Impl<Tr::Assocaited<Self>>;
     fn method<'out: 'tmp, 'tmp>(_: Tr::In<'out, 'tmp, Self>) -> Tr::Out<'out, Self>
     where

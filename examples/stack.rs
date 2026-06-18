@@ -13,15 +13,15 @@ use metatrait::{
     Impl, Trait,
 };
 
-trait Fetch {
-    type T;
+trait Fetch: Send {
+    type T: Send;
     type Wr: ?Sized + Map + Pure + Iterate;
     fn fetch(self) -> impl Wraps<Self::Wr, Self::T>;
 }
 
-struct BoxFetch<T>(Box<Stack<T, Self>>);
+struct BoxFetch<T: Send>(Box<Stack<T, Self>>);
 
-impl<T> Fetch for BoxFetch<T> {
+impl<T: Send> Fetch for BoxFetch<T> {
     type T = Stack<T, Self>;
     type Wr = Verbatim;
 
@@ -41,7 +41,7 @@ impl<F: Fetch> TraitFn for Count<F> {
     type Out = Is<usize>;
 }
 
-impl<T, F: Fetch<T = Stack<T, F>>> IterateFn<F::Wr> for Count<F> {
+impl<T: Send, F: Fetch<T = Stack<T, F>>> IterateFn<F::Wr> for Count<F> {
     fn run(self) -> impl Impl<<F::Wr as Wrap>::Wrap<IntoEither<Self, Self::Out>>> {
         self.1
             .fetch()
@@ -53,7 +53,7 @@ impl<T, F: Fetch<T = Stack<T, F>>> IterateFn<F::Wr> for Count<F> {
     }
 }
 
-impl<T, F: Fetch<T = Self>> Stack<T, F> {
+impl<T: Send, F: Fetch<T = Self>> Stack<T, F> {
     fn count(self) -> impl Wraps<F::Wr, usize> {
         Trait::union(if let Some(next) = self.next {
             Either::Left(F::Wr::iterate(Count(1, next)))

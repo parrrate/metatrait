@@ -10,7 +10,7 @@ impl<Tr: ?Sized + Trait> Trait for To<Tr> {
     type Out<'out, Imp: Impl<Self>> = Imp::Associated;
     type Sample = fn() -> Tr::Sample;
     type Common<'a>
-        = Box<dyn 'a + FnOnce() -> Tr::Common<'a>>
+        = Box<dyn 'a + Send + FnOnce() -> Tr::Common<'a>>
     where
         Self: 'a;
 
@@ -26,7 +26,7 @@ impl<Tr: ?Sized + Trait> Trait for To<Tr> {
     }
 }
 
-impl<F: FnOnce() -> Out, Out: Impl<Tr>, Tr: ?Sized + Trait> Impl<To<Tr>> for F {
+impl<F: Send + FnOnce() -> Out, Out: Impl<Tr>, Tr: ?Sized + Trait> Impl<To<Tr>> for F {
     type Associated = Out;
 
     fn method<'out: 'tmp, 'tmp>(

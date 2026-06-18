@@ -11,28 +11,28 @@ use crate::{
 #[phantom]
 pub struct Results<E>;
 
-impl<T, E> BaseUnwrap<Result<T, E>> for Results<E> {
+impl<T: Send, E: Send> BaseUnwrap<Result<T, E>> for Results<E> {
     type T = T;
 }
 
-impl<E> BaseWrap for Results<E> {
-    type Wrap<T> = Result<T, E>;
+impl<E: Send> BaseWrap for Results<E> {
+    type Wrap<T: Send> = Result<T, E>;
 }
 
-impl<E> BasePure for Results<E> {
-    fn pure<T>(x: T) -> Self::Wrap<T> {
+impl<E: Send> BasePure for Results<E> {
+    fn pure<T: Send>(x: T) -> Self::Wrap<T> {
         Ok(x)
     }
 }
 
-impl<E> BaseMap for Results<E> {
-    fn map<Out, In>(x: Self::Wrap<In>, f: impl FnOnce(In) -> Out) -> Self::Wrap<Out> {
+impl<E: Send> BaseMap for Results<E> {
+    fn map<Out: Send, In: Send>(x: Self::Wrap<In>, f: impl FnOnce(In) -> Out) -> Self::Wrap<Out> {
         x.map(f)
     }
 }
 
-impl<E> BaseMap2 for Results<E> {
-    fn map2<Out, In0, In1>(
+impl<E: Send> BaseMap2 for Results<E> {
+    fn map2<Out: Send, In0: Send, In1: Send>(
         x0: Self::Wrap<In0>,
         x1: Self::Wrap<In1>,
         f: impl FnOnce(In0, In1) -> Out,
@@ -41,8 +41,8 @@ impl<E> BaseMap2 for Results<E> {
     }
 }
 
-impl<E> BaseSelect for Results<E> {
-    fn select<In0, In1>(
+impl<E: Send> BaseSelect for Results<E> {
+    fn select<In0: Send, In1: Send>(
         x0: Self::Wrap<In0>,
         x1: Self::Wrap<In1>,
     ) -> BaseSelectWrap<Self, In0, In1> {
@@ -54,13 +54,13 @@ impl<E> BaseSelect for Results<E> {
     }
 }
 
-impl<E> BaseFlatten for Results<E> {
-    fn flatten<T>(x: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T> {
+impl<E: Send> BaseFlatten for Results<E> {
+    fn flatten<T: Send>(x: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T> {
         x.and_then(identity)
     }
 }
 
-impl<E> BaseIterate for Results<E> {
+impl<E: Send> BaseIterate for Results<E> {
     fn iterate<F: BaseIterateFn<Self>>(mut f: F) -> Self::Wrap<F::Out> {
         Ok(loop {
             match f.run()? {
@@ -71,11 +71,11 @@ impl<E> BaseIterate for Results<E> {
     }
 }
 
-impl<E> BaseToEither for Results<E> {
+impl<E: Send> BaseToEither for Results<E> {
     type L = Sometimes;
     type R = Sometimes;
 
-    fn either<In, Out>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
+    fn either<In: Send, Out: Send>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
         match x {
             Ok(x) => Either::Left((x, Sometimes)),
             Err(e) => Either::Right((Err(e), Sometimes)),
@@ -83,8 +83,8 @@ impl<E> BaseToEither for Results<E> {
     }
 }
 
-impl<E> BaseTranspose for Results<E> {
-    fn transpose<Wr: ?Sized + BasePure + BaseMap, T>(
+impl<E: Send> BaseTranspose for Results<E> {
+    fn transpose<Wr: ?Sized + BasePure + BaseMap, T: Send>(
         x: Self::Wrap<Wr::Wrap<T>>,
     ) -> Wr::Wrap<Self::Wrap<T>> {
         match x {
@@ -94,8 +94,8 @@ impl<E> BaseTranspose for Results<E> {
     }
 }
 
-impl<E> BaseInspect for Results<E> {
-    fn inspect<Out, In>(
+impl<E: Send> BaseInspect for Results<E> {
+    fn inspect<Out: Send, In: Send>(
         x: Self::Wrap<In>,
         f: impl FnOnce(&mut In) -> Self::Wrap<Out>,
     ) -> Self::Wrap<Out> {

@@ -2,8 +2,8 @@ use either::Either;
 
 use super::functor::*;
 
-pub trait BaseIterateFn<Wr: ?Sized + BaseWrap>: Sized {
-    type Out;
+pub trait BaseIterateFn<Wr: ?Sized + BaseWrap>: Sized + Send {
+    type Out: Send;
     fn run(self) -> Wr::Wrap<Either<Self, Self::Out>>;
 }
 

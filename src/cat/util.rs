@@ -162,15 +162,15 @@ pub trait SelectMapExt: Pure + Map + Flatten {
 
 impl<Wr: ?Sized + Pure + Map + Flatten> SelectMapExt for Wr {}
 
-pub trait Wraps<Wr: ?Sized + Wrap, T>: Impl<Wr::Wrap<Is<T>>> {}
+pub trait Wraps<Wr: ?Sized + Wrap, T: Send>: Impl<Wr::Wrap<Is<T>>> {}
 
-impl<Wr: ?Sized + Wrap, T, To: Impl<Wr::Wrap<Is<T>>>> Wraps<Wr, T> for To {}
+impl<Wr: ?Sized + Wrap, T: Send, To: Impl<Wr::Wrap<Is<T>>>> Wraps<Wr, T> for To {}
 
 pub type WrapCommon<'a, Wr, T> = <<Wr as Wrap>::Wrap<Is<T>> as Trait>::Common<'a>;
 
 pub struct IsToEither;
 
-impl<L, R> MapFn<Is<Either<L, R>>> for IsToEither {
+impl<L: Send, R: Send> MapFn<Is<Either<L, R>>> for IsToEither {
     type Out = IntoEither<L, Is<R>>;
 
     fn run(self, x: impl Impl<Is<Either<L, R>>>) -> impl Impl<Self::Out> {

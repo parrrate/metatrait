@@ -6,7 +6,7 @@ use super::empty::Empty;
 
 pub struct Is<That>(That);
 
-impl<That> Trait for Is<That> {
+impl<That: Send> Trait for Is<That> {
     type Assocaited<Imp: Impl<Self>> = Empty;
     type In<'out: 'tmp, 'tmp, Imp: 'tmp + Impl<Self>> = Imp;
     type Out<'out, Imp: Impl<Self>> = That;
@@ -31,7 +31,7 @@ impl<That> Trait for Is<That> {
     }
 }
 
-impl<That> Impl<Is<Self>> for That {
+impl<That: Send> Impl<Is<Self>> for That {
     type Associated = Self;
 
     fn method<'out: 'tmp, 'tmp>(this: Self) -> Self
@@ -43,7 +43,7 @@ impl<That> Impl<Is<Self>> for That {
 }
 
 pub trait Into2 {
-    fn t_into<That>(self) -> That
+    fn t_into<That: Send>(self) -> That
     where
         Self: Impl<Is<That>>,
     {
@@ -53,7 +53,7 @@ pub trait Into2 {
 
 impl<That> Into2 for That {}
 
-impl<That> Free for Is<That> {
+impl<That: Send> Free for Is<That> {
     type Free = That;
 
     fn free(x: impl Impl<Self>) -> Self::Free {

@@ -198,7 +198,7 @@ impl<F: TraitFn, WrI: ?Sized + Wrap> TraitFn for CompositionIterate<F, WrI> {
 #[phantom]
 struct CompositionIterateMap<F, Wr: ?Sized, Tr: ?Sized>;
 
-impl<F, Wr: ?Sized + Transpose, Tr: ?Sized + Trait> MapFn<Wr::Wrap<IntoEither<F, Tr>>>
+impl<F: Send, Wr: ?Sized + Transpose, Tr: ?Sized + Trait> MapFn<Wr::Wrap<IntoEither<F, Tr>>>
     for CompositionIterateMap<F, Wr, Tr>
 {
     type Out = IntoEither<CompositionIterate<F, Wr>, Wr::Wrap<Tr>>;

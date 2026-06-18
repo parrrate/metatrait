@@ -7,28 +7,28 @@ use crate::{
 
 pub struct Options;
 
-impl<T> BaseUnwrap<Option<T>> for Options {
+impl<T: Send> BaseUnwrap<Option<T>> for Options {
     type T = T;
 }
 
 impl BaseWrap for Options {
-    type Wrap<T> = Option<T>;
+    type Wrap<T: Send> = Option<T>;
 }
 
 impl BasePure for Options {
-    fn pure<T>(x: T) -> Self::Wrap<T> {
+    fn pure<T: Send>(x: T) -> Self::Wrap<T> {
         Some(x)
     }
 }
 
 impl BaseMap for Options {
-    fn map<Out, In>(x: Self::Wrap<In>, f: impl FnOnce(In) -> Out) -> Self::Wrap<Out> {
+    fn map<Out: Send, In: Send>(x: Self::Wrap<In>, f: impl FnOnce(In) -> Out) -> Self::Wrap<Out> {
         x.map(f)
     }
 }
 
 impl BaseMap2 for Options {
-    fn map2<Out, In0, In1>(
+    fn map2<Out: Send, In0: Send, In1: Send>(
         x0: Self::Wrap<In0>,
         x1: Self::Wrap<In1>,
         f: impl FnOnce(In0, In1) -> Out,
@@ -38,7 +38,7 @@ impl BaseMap2 for Options {
 }
 
 impl BaseSelect for Options {
-    fn select<In0, In1>(
+    fn select<In0: Send, In1: Send>(
         x0: Self::Wrap<In0>,
         x1: Self::Wrap<In1>,
     ) -> BaseSelectWrap<Self, In0, In1> {
@@ -51,7 +51,7 @@ impl BaseSelect for Options {
 }
 
 impl BaseFlatten for Options {
-    fn flatten<T>(x: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T> {
+    fn flatten<T: Send>(x: Self::Wrap<Self::Wrap<T>>) -> Self::Wrap<T> {
         x.flatten()
     }
 }
@@ -71,7 +71,7 @@ impl BaseToEither for Options {
     type L = Sometimes;
     type R = Sometimes;
 
-    fn either<In, Out>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
+    fn either<In: Send, Out: Send>(x: Self::Wrap<In>) -> BaseToEitherWrap<Self, In, Out> {
         match x {
             Some(x) => Either::Left((x, Sometimes)),
             None => Either::Right((None, Sometimes)),
@@ -80,7 +80,7 @@ impl BaseToEither for Options {
 }
 
 impl BaseTranspose for Options {
-    fn transpose<Wr: ?Sized + BasePure + BaseMap, T>(
+    fn transpose<Wr: ?Sized + BasePure + BaseMap, T: Send>(
         x: Self::Wrap<Wr::Wrap<T>>,
     ) -> Wr::Wrap<Self::Wrap<T>> {
         match x {
@@ -91,7 +91,7 @@ impl BaseTranspose for Options {
 }
 
 impl BaseInspect for Options {
-    fn inspect<Out, In>(
+    fn inspect<Out: Send, In: Send>(
         x: Self::Wrap<In>,
         f: impl FnOnce(&mut In) -> Self::Wrap<Out>,
     ) -> Self::Wrap<Out> {
